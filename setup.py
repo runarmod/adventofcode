@@ -1,3 +1,8 @@
+# This program is will create the needed files for
+# a problem and get the input it may also open the
+# problem in the browser and start a vs code session
+
+
 import os, sys
 import requests
 from bs4 import BeautifulSoup
