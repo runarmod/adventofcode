@@ -7,7 +7,6 @@ import contextlib
 import os
 import sys
 import requests
-from bs4 import BeautifulSoup
 from datetime import datetime
 from cookie import cookie
 import pytz
@@ -89,8 +88,7 @@ def main():
             cookies = {'session': cookie}
             inputURL = f"{URL}/input"
             page = requests.get(inputURL, cookies=cookies)
-            soup = BeautifulSoup(page.content, "html.parser")
-            f.write(soup.contents[0])
+            f.write(page.content)
             print(f"Input downloaded to {inputPath}")
     else:
         print("Inputfile already exists. Continuing...")
