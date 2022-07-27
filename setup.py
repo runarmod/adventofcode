@@ -2,88 +2,123 @@
 # a problem and get the input it may also open the
 # problem in the browser and start a vs code session
 
-
-import os, sys
+import argparse
+import contextlib
+import os
+import sys
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 from cookie import cookie
 import pytz
 import webbrowser
+import pause
 
+if __name__ != "__main__":
+    quit()
 
-# Get input either in command line or input
-if len(sys.argv) != 3:
-    year = input("Please enter a year: ")
-    day = input("Please enter a day: ")
-else:
-    year = str(sys.argv[1])
-    day = str(sys.argv[2])
+def updateNow():
+    global now
+    now = datetime.now(tz=pytz.timezone('EST'))
 
-try:
-    int(day)
-    int(year)
-except:
-    raise Exception("Day and/or year is not number")
+updateNow()
+parser = argparse.ArgumentParser(description='AOC setup and download.\n If neither day nor year is supplied, today\'s day will be used.', epilog='Example: setup.py 13 2018')
+parser.add_argument('-d', help='Day', default=now.day + 1, choices=range(1, 25+1), type=int)
+parser.add_argument('-y', help='Year', default=now.year, choices=range(2015, now.year + 1), type=int)
+parser.add_argument('-w', '--wait', action='store_true', help='Create template, wait for puzzle to be released, and download it.')
+parser.add_argument('-i', action='store_true', help='Only download input.')
+parser.add_argument('-b', action='store_true', help='Open browser.')
+parser.add_argument('-c', action='store_true', help='Open VS code.')
+parser.add_argument('-f', action='store_true', help='Force download and file-creation even when they exist. DANGEROUS!')
 
-if int(day) > 25 or int(day) < 1:
-    raise Exception("Day must be between 1 and 25")
+# # Get input either in command line or input
+# if len(sys.argv) != 3:
+#     year = input("Please enter a year: ")
+#     day = input("Please enter a day: ")
+# else:
+#     year = str(sys.argv[1])
+#     day = str(sys.argv[2])
 
-if int(year) > datetime.now().year or int(year) < 2015:
-    raise Exception("Year must be between 2015 and %i" %datetime.now().year)
+# try:
+#     int(day)
+#     int(year)
+# except:
+#     raise ValueError("Day and/or year is not number")
 
+# if int(day) > 25 or int(day) < 1:
+#     raise ValueError("Day must be between 1 and 25")
+
+# if int(year) > datetime.now().year or int(year) < 2015:
+#     raise ValueError("Year must be between 2015 and %i" % datetime.now().year)
+
+args = parser.parse_args()
 
 # Find how long until
-now = datetime.now(tz=pytz.timezone('EST'))
-release = now.replace(year = int(year), month = 12, day = int(day), hour = 0, minute = 0, second = 0, microsecond = 0)
-if now < release:
-    raise Exception("The problem doesn't exist yet.\nTime remaining: " + str(release - now))
+release = now.replace(year=args.y, month=12, day=args.d, hour=0, minute=0, second=0, microsecond=0)
+if now < release and not args.wait:
+    sys.exit(f"The problem doesn't exist yet.\nTime remaining: {str(release - now)}\nUse wait flag to wait for release.")
 
 
 # Make new year directory if it doesn't exist
-path = "." + "\\" + year
-try:
+path = os.path.join(os.path.abspath(os.path.dirname(__file__)), str(args.y))
+with contextlib.suppress(OSError):
     os.mkdir(path)
-except OSError:
-    pass
 
-path += "\\" + day
-
-if os.path.isdir(path):
-    raise Exception("Day already exists.\nQuiting...\n")
-
-# Create folder from input
-try:
+# Make new day directory if it doesn't exist
+path = os.path.join(path, str(args.d))
+with contextlib.suppress(OSError):
     os.mkdir(path)
-except OSError:
-    raise Exception("Creation of the directory %s failed" % path)
+
+# if os.path.isdir(path) and not args.i:
+#     sys.exit("Day already exists.\nQuiting...\n")
 
 
-# Crate testinput file
-open(path + "/testinput.txt", 'w').close()
+if not args.i:
+    # Crate testinput file
+    if not os.path.exists(testPath := os.path.join(path, "testinput.txt")) or args.f:
+        open(testPath, 'w').close()
+
+    # Create part 1 and 2
+    if not os.path.exists(mainPath := os.path.join(path, "main.py")) or args.f:
+        with open(mainPath, "w") as f:
+            with open("template.py", "r") as template:
+                f.write(template.read())
+    
+    # Create URL file
+    if not os.path.exists(urlPath := os.path.join(path, "problem.url")) or args.f:
+        with open(urlPath, "w") as f:
+            f.write(f"[InternetShortcut]\nURL=https://adventofcode.com/{args.y}/day/{args.d}\n")
 
 
-URL = "https://adventofcode.com/" + year + "/day/" + day
 # Make inputfile
-with open(path + "/input.txt", "w") as f:
-    cookies = {'session': cookie}
-    inputURL = URL + "/input"
-    page = requests.get(inputURL, cookies=cookies)
-    soup = BeautifulSoup(page.content, "html.parser")
-    f.write(soup.contents[0])
+URL = f"https://adventofcode.com/{args.y}/day/{args.d}"
+if not os.path.exists(inputPath := os.path.join(path, "input.txt")) or args.f:
+    if args.wait:
+        # Wait for puzzle to be released
+        updateNow()
+        if (release - now).total_seconds() > 60 * 60 * 24:
+            sys.exit(f"Not waiting more than a day... Quiting...\nTime remaining: {release - now}")
+        
+        print(f"Waiting for puzzle to be released at {release}")
+        pause.until(release)
 
-# Create part 1 and 2
-part1 = path + "/part1.py"
-for i in range(2):
-    with open(path + "/part" + str(i + 1) + ".py", "w") as f:
-        with open("template.py", "r") as template:
-            f.write(template.read())
+    with open(inputPath, "w") as f:
+        cookies = {'session': cookie}
+        inputURL = f"{URL}/input"
+        page = requests.get(inputURL, cookies=cookies)
+        soup = BeautifulSoup(page.content, "html.parser")
+        f.write(soup.contents[0])
+        print(f"Input downloaded to {inputPath}")
+else:
+    print("Inputfile already exists. Continuing...")
 
 # Success!
-print(str(path) + " and adjacent files created!")
-if input("Open VS Code? (y/n) ") == "y":
-    print("Opening VS Code!")
-    os.system("code " + path)
-if input("Open challenge? (y/n) ") == "y":
+if args.b:
     print("Opening challenge!")
-    webbrowser.open(URL)
+    if os.path.exists(urlFile := os.path.join(path, "problem.url")):
+        os.system(urlFile)
+    else:
+        webbrowser.open(URL)
+if args.c:
+    print("Opening VS Code!")
+    os.system(f"code {path}")
