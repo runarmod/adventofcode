@@ -63,7 +63,7 @@ def main():
         os.mkdir(path)
 
     # Make new day directory if it doesn't exist
-    path = os.path.join(path, str(args.d))
+    path = os.path.join(path, str(args.d).zfill(2))
     with contextlib.suppress(OSError):
         os.mkdir(path)
 
