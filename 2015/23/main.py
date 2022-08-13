@@ -46,8 +46,7 @@ class Solution:
         return self.run()
 
     def part2(self):
-        self.registers = defaultdict(int)
-        self.registers["a"] = 1
+        self.registers = defaultdict(int, a=1)
         return self.run()
 
 
