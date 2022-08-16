@@ -8,10 +8,15 @@ import os
 import sys
 import requests
 from datetime import datetime
-from cookie import cookie
+from dotenv import load_dotenv
 import pytz
 import webbrowser
 import pause
+
+load_dotenv()
+COOKIE = os.getenv("COOKIE")
+if COOKIE is None:
+    sys.exit("COOKIE not found in .env")
 
 
 def main():
@@ -103,11 +108,14 @@ def main():
             pause.until(release)
 
         with open(inputPath, "w") as f:
-            cookies = {"session": cookie}
+            cookies = {"session": COOKIE}
             inputURL = f"{URL}/input"
             page = requests.get(inputURL, cookies=cookies)
-            f.write(page.content.decode())
-            print(f"Input downloaded to {inputPath}")
+            if page.status_code == 200:
+                f.write(page.content.decode())
+                print(f"Input downloaded to {inputPath}")
+            else:
+                sys.exit(f"Error: {page.status_code}")
     else:
         print("Inputfile already exists. Continuing...")
 
