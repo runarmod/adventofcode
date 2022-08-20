@@ -1,5 +1,7 @@
 from collections import defaultdict
+from random import shuffle
 import re
+import timeit
 
 
 class Solution:
@@ -8,6 +10,7 @@ class Solution:
         filename = "testinput.txt" if self.test else "input.txt"
         pattern_rules = re.compile(r"(\w+) => (\w+)")
         self.rules = defaultdict(list)
+        self.mol = "CRnCaCaCaSiRnBPTiMgArSiRnSiRnMgArSiRnCaFArTiTiBSiThFYCaFArCaCaSiThCaPBSiThSiThCaCaPTiRnPBSiThRnFArArCaCaSiThCaSiThSiRnMgArCaPTiBPRnFArSiThCaSiRnFArBCaSiRnCaPRnFArPMgYCaFArCaPTiTiTiBPBSiThCaPTiBPBSiRnFArBPBSiRnCaFArBPRnSiRnFArRnSiRnBFArCaFArCaCaCaSiThSiThCaCaPBPTiTiRnFArCaPTiBSiAlArPBCaCaCaCaCaSiRnMgArCaSiThFArThCaSiThCaSiRnCaFYCaSiRnFYFArFArCaSiRnFYFArCaSiRnBPMgArSiThPRnFArCaSiRnFArTiRnSiRnFYFArCaSiRnBFArCaSiRnTiMgArSiThCaSiThCaFArPRnFArSiRnFArTiTiTiTiBCaCaSiRnCaCaFYFArSiThCaPTiBPTiBCaSiThSiRnMgArCaF"
         with open(filename) as f:
             s = f.read().rstrip()
             for match in pattern_rules.findall(s):
@@ -29,14 +32,74 @@ class Solution:
         return l
 
     def part1(self):
-        self.news = set()
+        unique = set()
         for i, atom in enumerate(self.list):
             for new in self.rules[atom]:
-                self.news.add("".join(self.list[:i] + [new] + self.list[i + 1 :]))
-        return len(self.news)
+                unique.add("".join(self.list[:i] + [new] + self.list[i + 1 :]))
+        return len(unique)
 
     def part2(self):
-        return None
+        rules = [
+            ("Al", "ThF"),
+            ("Al", "ThRnFAr"),
+            ("B", "BCa"),
+            ("B", "TiB"),
+            ("B", "TiRnFAr"),
+            ("Ca", "CaCa"),
+            ("Ca", "PB"),
+            ("Ca", "PRnFAr"),
+            ("Ca", "SiRnFYFAr"),
+            ("Ca", "SiRnMgAr"),
+            ("Ca", "SiTh"),
+            ("F", "CaF"),
+            ("F", "PMg"),
+            ("F", "SiAl"),
+            ("H", "CRnAlAr"),
+            ("H", "CRnFYFYFAr"),
+            ("H", "CRnFYMgAr"),
+            ("H", "CRnMgYFAr"),
+            ("H", "HCa"),
+            ("H", "NRnFYFAr"),
+            ("H", "NRnMgAr"),
+            ("H", "NTh"),
+            ("H", "OB"),
+            ("H", "ORnFAr"),
+            ("Mg", "BF"),
+            ("Mg", "TiMg"),
+            ("N", "CRnFAr"),
+            ("N", "HSi"),
+            ("O", "CRnFYFAr"),
+            ("O", "CRnMgAr"),
+            ("O", "HP"),
+            ("O", "NRnFAr"),
+            ("O", "OTi"),
+            ("P", "CaP"),
+            ("P", "PTi"),
+            ("P", "SiRnFAr"),
+            ("Si", "CaSi"),
+            ("Th", "ThCa"),
+            ("Ti", "BP"),
+            ("Ti", "TiTi"),
+            ("e", "HF"),
+            ("e", "NAl"),
+            ("e", "OMg"),
+        ]
+
+        target = self.mol
+        res = 0
+
+        while target != "e":
+            tmp = target
+
+            for a, b in rules:
+                res += target.count(b)
+                target = target.replace(b, a)
+
+            if tmp == target:
+                target = self.mol
+                res = 0
+                shuffle(rules)
+        return res
 
 
 def main():
