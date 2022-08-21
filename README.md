@@ -5,3 +5,12 @@ The majority (I think maybe all) of the code is written a long time after the re
 Though I will try now in 2022 to do as many problems the day of release.
 
 This repository contains a setup file, which will initiate a work-directory with a template, in addition to downloading the input using a cookie found in [.env](https://github.com/runarmod/adventofcode/blob/main/.env.example).
+
+Years completed:
+- [x] 2015
+- [ ] 2016
+- [ ] 2017
+- [ ] 2018
+- [ ] 2019
+- [ ] 2020
+- [ ] 2021
