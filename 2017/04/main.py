@@ -1,27 +1,33 @@
-lines = open("in.txt").read().splitlines()
-
-def part1():
-    summ = 0
-    for line in lines:
-        if len(line.split(" ")) == len(list(set(line.split(" ")))):
-            summ += 1
-    return summ
-
-def part2():
-    summ = 0
-    for line in lines:
-        # nothin
-        for i in range(len(line)):
-            word1 = line[i]
-            for j in range(len(line)):
-                word2 = line[j]
-                if i == j:
-                    continue
-                if sorted(word1) == sorted(word2):
-                    summ += 1
-                    goto(13)
-    return summ
+from collections import Counter
 
 
-print("Part 1:", part1())
-print("Part 2:", part2())
+class Solution:
+    def __init__(self, test=False):
+        self.test = test
+        filename = "testinput.txt" if self.test else "input.txt"
+        self.lines = [
+            line.split(" ") for line in open(filename).read().rstrip().split("\n")
+        ]
+
+    def part1(self):
+        return sum(len(set(line)) == len(line) for line in self.lines)
+
+    def part2(self):
+        return sum(
+            len({"".join(sorted(word)) for word in line}) == len(line)
+            for line in self.lines
+        )
+
+
+def main():
+    solution = Solution()
+    print(part1 := f"Part 1: {solution.part1()}")
+    print(part2 := f"Part 2: {solution.part2()}")
+
+    if not solution.test:
+        with open("solution.txt", "w") as f:
+            f.write(f"{part1}\n{part2}\n")
+
+
+if __name__ == "__main__":
+    main()
