@@ -1,9 +1,10 @@
 # This program is will create the needed files for
 # a problem and get the input it may also open the
 # problem in the browser and start a vs code session
-
 import argparse
+from bs4 import BeautifulSoup
 import contextlib
+import http.cookiejar
 import os
 import sys
 import requests
@@ -12,6 +13,7 @@ from dotenv import load_dotenv
 import pytz
 import webbrowser
 import pause
+from markdownify import markdownify as md
 
 load_dotenv()
 COOKIE = os.getenv("COOKIE")
@@ -27,10 +29,13 @@ def main():
     updateNow()
     parser = argparse.ArgumentParser(
         description="AOC setup and download.\n If neither day nor year is supplied, today's day will be used.",
-        epilog="Example: setup.py 13 2018",
+        epilog="Example: setup.py -d 13 -y 2018",
     )
     parser.add_argument(
         "-d", help="Day", default=now.day + 1, choices=range(1, 25 + 1), type=int
+    )
+    parser.add_argument(
+        "-t", help="Today", action="store_true", default=False, dest="today"
     )
     parser.add_argument(
         "-y", help="Year", default=now.year, choices=range(2015, now.year + 1), type=int
@@ -51,6 +56,9 @@ def main():
     )
 
     args = parser.parse_args()
+    if args.today:
+        args.d = now.day
+        args.y = now.year
 
     # Find how long until
     release = now.replace(
@@ -93,6 +101,9 @@ def main():
                     f"[InternetShortcut]\nURL=https://adventofcode.com/{args.y}/day/{args.d}\n"
                 )
 
+    # cookies = http.cookiejar.MozillaCookieJar(os.path.join(setupPyAbsDir, "cookies.txt"))
+    # cookies.load(os.path.join(setupPyAbsDir, "cookies.txt"), ignore_discard=True, ignore_expires=True)
+
     # Make inputfile
     URL = f"https://adventofcode.com/{args.y}/day/{args.d}"
     if not os.path.exists(inputPath := os.path.join(path, "input.txt")) or args.f:
@@ -110,14 +121,34 @@ def main():
         with open(inputPath, "w") as f:
             cookies = {"session": COOKIE}
             inputURL = f"{URL}/input"
-            page = requests.get(inputURL, cookies=cookies)
+            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; U; ru; rv:5.0.1.6) Gecko/20110501 Firefox/5.0.1 Firefox/5.0.1'}
+            page = requests.get(inputURL, cookies=cookies, headers=headers)
             if page.status_code == 200:
                 f.write(page.content.decode())
                 print(f"Input downloaded to {inputPath}")
             else:
-                sys.exit(f"Error: {page.status_code}")
+                sys.exit(
+                    f"Input download failed\nError: {page.status_code}\n{page.content}"
+                )
     else:
         print("Inputfile already exists. Continuing...")
+
+    if not os.path.exists(taskPath := os.path.join(path, "task.md")) or args.f:
+        with open(taskPath, "w") as f:
+            # cookies = {"session": COOKIE}
+            taskURL = f"{URL}"
+            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; U; ru; rv:5.0.1.6) Gecko/20110501 Firefox/5.0.1 Firefox/5.0.1'}
+            page = requests.get(taskURL, cookies=cookies, headers=headers)
+            if page.status_code == 200:
+                soup = BeautifulSoup(page.content, 'html.parser')
+                childsoup = soup.find("article")
+                f.write(md(str(childsoup), heading_style="ATX"))
+                print(f"Task downloaded to {taskPath}")
+            else:
+                sys.exit(
+                    f"Task download failed\nError: {page.status_code}\n{page.content}"
+                )
+        
 
     # Success!
     if args.b:
