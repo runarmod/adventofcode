@@ -5,7 +5,7 @@ class Solution:
     def __init__(self, test=False):
         self.test = test
         filename = "testinput.txt" if self.test else "input.txt"
-        self.data = [-sum(int(calorie) for calorie in person.split("\n")) for person in open(filename).read().rstrip().split("\n\n")]
+        self.data = [-sum(int(calorie) for calorie in raindeer.split("\n")) for raindeer in open(filename).read().rstrip().split("\n\n")]
 
         heapify(self.data)
 
