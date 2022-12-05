@@ -4,6 +4,7 @@
 import argparse
 from bs4 import BeautifulSoup
 import contextlib
+from countdown import countdown
 import http.cookiejar
 import os
 import sys
@@ -32,7 +33,7 @@ def main():
         epilog="Example: setup.py -d 13 -y 2018",
     )
     parser.add_argument(
-        "-d", help="Day", default=now.day + 1, choices=range(1, 25 + 1), type=int
+        "-d", help="Day", default=now.day, choices=range(1, 25 + 1), type=int
     )
     parser.add_argument(
         "-t", help="Today", action="store_true", default=False, dest="today"
@@ -114,9 +115,8 @@ def main():
                 sys.exit(
                     f"Not waiting more than a day... Quiting...\nTime remaining: {release - now}"
                 )
-
-            print(f"Waiting for puzzle to be released at {release}")
-            pause.until(release)
+            
+            countdown(release)
 
         with open(inputPath, "w") as f:
             cookies = {"session": COOKIE}
@@ -135,7 +135,7 @@ def main():
 
     if not os.path.exists(taskPath := os.path.join(path, "task.md")) or args.f:
         with open(taskPath, "w") as f:
-            # cookies = {"session": COOKIE}
+            cookies = {"session": COOKIE}
             taskURL = f"{URL}"
             headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; U; ru; rv:5.0.1.6) Gecko/20110501 Firefox/5.0.1 Firefox/5.0.1'}
             page = requests.get(taskURL, cookies=cookies, headers=headers)
