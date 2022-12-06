@@ -13,20 +13,14 @@ class Solution:
     def part1(self):
         return self.find_message_with_length(4)
 
-
     def part2(self):
         return self.find_message_with_length(14)
 
     def find_message_with_length(self, length):
-        seen = []
-        for i, c in enumerate(self.data):
-            seen.append(c)
-            if len(seen) > length:
-                seen.pop(0)
-                if len(set(seen)) == length:
-                    return i + 1
-        return -1
-
+        for i in range(length, len(self.data)):
+            if len(set(self.data[i : i + length])) == length:
+                return i + length
+        raise ValueError("No message found")
 
 def main():
     test = Solution(test=True)
