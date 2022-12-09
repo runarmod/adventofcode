@@ -1,6 +1,5 @@
 import re
 from typing import Dict, List, Tuple
-import pyperclip
 
 
 def parseLine(line):
@@ -18,8 +17,7 @@ DIRECTIONS: Dict[str, Tuple[int, int]] = {
 
 class Solution:
     def __init__(self, test=False) -> None:
-        self.test = test
-        filename = "testinput.txt" if self.test else "input.txt"
+        filename = "testinput.txt" if test else "input.txt"
         self.data = [
             parseLine(line) for line in open(filename).read().rstrip().split("\n")
         ]
@@ -27,10 +25,10 @@ class Solution:
     def too_far_away(self, coord1: Tuple[int, int], coord2: Tuple[int, int]) -> bool:
         return any((abs(coord1[0] - coord2[0]) > 1, abs(coord1[1] - coord2[1]) > 1))
 
-    def part1(self):
+    def part1(self) -> int:
         return self.rope_drag(2)
 
-    def part2(self):
+    def part2(self) -> int:
         return self.rope_drag(10)
 
     def rope_drag(self, n: int) -> int:
@@ -43,27 +41,24 @@ class Solution:
                 visited.add(tuple(nodes[-1]))
         return len(visited)
 
-    def update_head(self, nodes: List[List[int]], direction: str):
+    def update_head(self, nodes: List[List[int]], direction: str) -> None:
         nodes[0][0] += DIRECTIONS[direction][0]
         nodes[0][1] += DIRECTIONS[direction][1]
 
-    def update_children(self, nodes):
+    def update_children(self, nodes: List[List[int]]) -> None:
         for i in range(1, len(nodes)):
             if self.too_far_away(nodes[i - 1], nodes[i]):
                 self.update_child(nodes, i)
 
-    def update_child(self, nodes, i):
-        if nodes[i - 1][1] > nodes[i][1]:
-            nodes[i][1] += 1
-        elif nodes[i - 1][1] < nodes[i][1]:
-            nodes[i][1] -= 1
-        if nodes[i - 1][0] > nodes[i][0]:
-            nodes[i][0] += 1
-        elif nodes[i - 1][0] < nodes[i][0]:
-            nodes[i][0] -= 1
+    def update_child(self, nodes: List[List[int]], child_num: int) -> None:
+        nodes[child_num][0] += nodes[child_num - 1][0] > nodes[child_num][0]
+        nodes[child_num][0] -= nodes[child_num - 1][0] < nodes[child_num][0]
+
+        nodes[child_num][1] += nodes[child_num - 1][1] > nodes[child_num][1]
+        nodes[child_num][1] -= nodes[child_num - 1][1] < nodes[child_num][1]
 
 
-def main():
+def main() -> None:
     test = Solution(test=True)
     print(f"(TEST) Part 1: {test.part1()}")
     print(f"(TEST) Part 2: {test.part2()}")
