@@ -1,5 +1,7 @@
 from collections import defaultdict
+from pprint import pprint
 import itertools
+import pyperclip
 import re
 import string
 
@@ -25,16 +27,24 @@ class Solution:
 
 def main():
     test = Solution(test=True)
-    print(part1_test := f"Part 1: {test.part1()}")
-    print(part2_test := f"Part 2: {test.part2()}")
+    print(f"(TEST) Part 1: {test.part1()}")
+    print(f"(TEST) Part 2: {test.part2()}")
 
     solution = Solution()
-    print(part1 := f"Part 1: {solution.part1()}")
-    print(part2 := f"Part 2: {solution.part2()}")
+    part1 = solution.part1()
+    print(part1_text := f"Part 1: {part1}")
+    part2 = solution.part2()
+    print(part2_text := f"Part 2: {part2}")
 
-    if not solution.test:
-        with open("solution.txt", "w") as f:
-            f.write(f"{part1}\n{part2}\n")
+    copy = part1
+    if part2:
+        copy = part2
+
+    if copy:
+        pyperclip.copy(copy)
+
+    with open("solution.txt", "w") as f:
+        f.write(f"{part1_text}\n{part2_text}\n")
 
 
 if __name__ == "__main__":
