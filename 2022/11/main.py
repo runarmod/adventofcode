@@ -14,12 +14,18 @@ def parseMonkey(monkey):
     monkey_nr = int(lines[0].split(" ")[1][:-1])
     starting_items = set(map(int, lines[1].split(": ")[1].split(", ")))
     operation = lines[2].split(" = ")[1].split("old ")[1]
+    newOp = operation.split(" ")[1]
+    # print(operation)
+    
     if operation == "* old":
-        operation = "** 2"
+        operation = lambda x: x ** 2
+    elif operation[0] == "*":
+        operation = lambda x: x * int(newOp)
+    elif operation[0] == "+":
+        operation = lambda x: x + int(newOp)
     test = int(re.findall(r"(\d+)", lines[3])[0])
     true = int(re.findall(r"(\d+)", lines[4])[0])
     false = int(re.findall(r"(\d+)", lines[5])[0])
-    # print(f"{monkey_nr=}, {starting_items=}, {operation=}, {test=}, {true=}, {false=}")
     return {
         "inspect_count": 0,
         "monkey_nr": monkey_nr,
@@ -43,12 +49,7 @@ class Solution:
         for item in self.part_1_data[monkey_nr]["items"]:
             self.part_1_data[monkey_nr]["inspect_count"] += 1
             op = self.part_1_data[monkey_nr]["operation"]
-            if op[:2] == "**":
-                worry = item ** int(op.split(" ")[1])
-            elif op[0] == "*":
-                worry = item * int(op.split(" ")[1])
-            elif op[0] == "+":
-                worry = item + int(op.split(" ")[1])
+            worry = op(item)
             worry //= 3
             # print(op)
             # worry = eval(str(item) + self.part_1_data[monkey_nr]["operation"]) // 3
@@ -76,12 +77,7 @@ class Solution:
         for item in self.part_2_data[monkey_nr]["items"]:
             self.part_2_data[monkey_nr]["inspect_count"] += 1
             op = self.part_2_data[monkey_nr]["operation"]
-            if op[0] == "*" and op[1] == "*":
-                worry = item ** int(op.split(" ")[1])
-            elif op[0] == "*":
-                worry = item * int(op.split(" ")[1])
-            elif op[0] == "+":
-                worry = item + int(op.split(" ")[1])
+            worry = op(item)
             # worry = eval(str(item) + self.part_2_data[monkey_nr]["operation"])
             if worry % self.part_2_data[monkey_nr]["test"] == 0:
                 self.part_2_data[self.part_2_data[monkey_nr]["true"]]["items"].add(
@@ -107,19 +103,19 @@ class Solution:
 
 def main():
     test = Solution(test=True)
-    print(f"(TEST) Part 1: {test.part1()}")
+    # print(f"(TEST) Part 1: {test.part1()}")
     print(f"(TEST) Part 2: {test.part2()}")
 
     solution = Solution()
-    part1 = solution.part1()
+    # part1 = solution.part1()
     part2 = solution.part2()
-    print(part1_text := f"Part 1: {part1}")
+    # print(part1_text := f"Part 1: {part1}")
     print(part2_text := f"Part 2: {part2}")
 
-    copy_answer(part1, part2)
+    # copy_answer(part1, part2)
 
-    with open("solution.txt", "w") as f:
-        f.write(f"{part1_text}\n{part2_text}\n")
+    # with open("solution.txt", "w") as f:
+    #     f.write(f"{part1_text}\n{part2_text}\n")
 
 
 def copy_answer(part1, part2):
