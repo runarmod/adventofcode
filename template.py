@@ -32,19 +32,23 @@ def main():
 
     solution = Solution()
     part1 = solution.part1()
-    print(part1_text := f"Part 1: {part1}")
     part2 = solution.part2()
+    print(part1_text := f"Part 1: {part1}")
     print(part2_text := f"Part 2: {part2}")
 
+    copy_answer(part1, part2)
+
+    with open("solution.txt", "w") as f:
+        f.write(f"{part1_text}\n{part2_text}\n")
+
+
+def copy_answer(part1, part2):
     copy = part1
     if part2:
         copy = part2
 
     if copy:
         pyperclip.copy(copy)
-
-    with open("solution.txt", "w") as f:
-        f.write(f"{part1_text}\n{part2_text}\n")
 
 
 if __name__ == "__main__":

@@ -23,15 +23,15 @@ class Solution:
                 signal += cycle_nr * X
 
         X = 1
-        cycle_nr = 1
+        cycle_nr = 0
         signal = 0
         for line in self.data:
+            cycle_nr += 1
             update_signal()
             if line[0] == "addx":
                 cycle_nr += 1
                 update_signal()
                 X += line[1]
-            cycle_nr += 1
         return signal
 
     def part2(self):
