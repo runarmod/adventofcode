@@ -2,19 +2,21 @@
 # a problem and get the input it may also open the
 # problem in the browser and start a vs code session
 import argparse
-from bs4 import BeautifulSoup
 import contextlib
-from countdown import countdown
 import http.cookiejar
 import os
 import sys
-import requests
-from datetime import datetime
-from dotenv import load_dotenv
-import pytz
 import webbrowser
+from datetime import datetime
+
 import pause
+import pytz
+import requests
+from bs4 import BeautifulSoup
+from dotenv import load_dotenv
 from markdownify import markdownify as md
+
+from countdown import countdown
 
 load_dotenv()
 COOKIE = os.getenv("COOKIE")
@@ -93,7 +95,11 @@ def main():
         if not os.path.exists(mainPath := os.path.join(path, "main.py")) or args.f:
             with open(mainPath, "w") as f:
                 with open(os.path.join(setupPyAbsDir, "template.py"), "r") as template:
-                    f.write(template.read())
+                    f.write(
+                        template.read()
+                        .replace('"CHANGE_YEAR"', args.y)
+                        .replace('"CHANGE_DATE"', args.d)
+                    )
 
         # Create URL file
         if not os.path.exists(urlPath := os.path.join(path, "problem.url")) or args.f:
@@ -115,13 +121,15 @@ def main():
                 sys.exit(
                     f"Not waiting more than a day... Quiting...\nTime remaining: {release - now}"
                 )
-            
+
             countdown(release)
 
         with open(inputPath, "w") as f:
             cookies = {"session": COOKIE}
             inputURL = f"{URL}/input"
-            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; U; ru; rv:5.0.1.6) Gecko/20110501 Firefox/5.0.1 Firefox/5.0.1'}
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 6.1; U; ru; rv:5.0.1.6) Gecko/20110501 Firefox/5.0.1 Firefox/5.0.1"
+            }
             page = requests.get(inputURL, cookies=cookies, headers=headers)
             if page.status_code == 200:
                 f.write(page.content.decode())
@@ -137,10 +145,12 @@ def main():
         with open(taskPath, "w") as f:
             cookies = {"session": COOKIE}
             taskURL = f"{URL}"
-            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; U; ru; rv:5.0.1.6) Gecko/20110501 Firefox/5.0.1 Firefox/5.0.1'}
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 6.1; U; ru; rv:5.0.1.6) Gecko/20110501 Firefox/5.0.1 Firefox/5.0.1"
+            }
             page = requests.get(taskURL, cookies=cookies, headers=headers)
             if page.status_code == 200:
-                soup = BeautifulSoup(page.content, 'html.parser')
+                soup = BeautifulSoup(page.content, "html.parser")
                 childsoup = soup.find("article")
                 f.write(md(str(childsoup), heading_style="ATX"))
                 print(f"Task downloaded to {taskPath}")
@@ -148,7 +158,6 @@ def main():
                 sys.exit(
                     f"Task download failed\nError: {page.status_code}\n{page.content}"
                 )
-        
 
     # Success!
     if args.b:
