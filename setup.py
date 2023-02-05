@@ -13,15 +13,18 @@ import pause
 import pytz
 import requests
 from bs4 import BeautifulSoup
+from colorama import Fore, Style
+from colorama import init as colorama_init
 from dotenv import load_dotenv
 from markdownify import markdownify as md
 
 from countdown import countdown
 
+colorama_init(autoreset=True)
 load_dotenv()
 COOKIE = os.getenv("COOKIE")
 if COOKIE is None:
-    sys.exit("COOKIE not found in .env")
+    sys.exit(f"{Fore.YELLOW}COOKIE not found in .env")
 
 
 def main():
@@ -34,12 +37,8 @@ def main():
         description="AOC setup and download.\n If neither day nor year is supplied, today's day will be used.",
         epilog="Example: setup.py -d 13 -y 2018",
     )
-    parser.add_argument(
-        "-d", help="Day", default=now.day, choices=range(1, 25 + 1), type=int
-    )
-    parser.add_argument(
-        "-t", help="Today", action="store_true", default=False, dest="today"
-    )
+    parser.add_argument("-d", help="Day", default=now.day, choices=range(1, 25 + 1), type=int)
+    parser.add_argument("-t", help="Today", action="store_true", default=False, dest="today")
     parser.add_argument(
         "-y", help="Year", default=now.year, choices=range(2015, now.year + 1), type=int
     )
@@ -69,7 +68,7 @@ def main():
     )
     if now < release and not args.wait:
         sys.exit(
-            f"The problem doesn't exist yet.\nTime remaining: {str(release - now)}\nUse wait flag to wait for release."
+            f"{Fore.RED}The problem doesn't exist yet.\nTime remaining: {str(release - now)}\nUse wait flag to wait for release."
         )
 
     # Make new year directory if it doesn't exist
@@ -85,10 +84,7 @@ def main():
 
     if not args.i:
         # Crate testinput file
-        if (
-            not os.path.exists(testPath := os.path.join(path, "testinput.txt"))
-            or args.f
-        ):
+        if not os.path.exists(testPath := os.path.join(path, "testinput.txt")) or args.f:
             open(testPath, "w").close()
 
         # Create part 1 and 2
@@ -97,16 +93,14 @@ def main():
                 with open(os.path.join(setupPyAbsDir, "template.py"), "r") as template:
                     f.write(
                         template.read()
-                        .replace('"CHANGE_YEAR"', args.y)
-                        .replace('"CHANGE_DATE"', args.d)
+                        .replace('"CHANGE_YEAR"', str(args.y))
+                        .replace('"CHANGE_DATE"', str(args.d))
                     )
 
         # Create URL file
         if not os.path.exists(urlPath := os.path.join(path, "problem.url")) or args.f:
             with open(urlPath, "w") as f:
-                f.write(
-                    f"[InternetShortcut]\nURL=https://adventofcode.com/{args.y}/day/{args.d}\n"
-                )
+                f.write(f"[InternetShortcut]\nURL=https://adventofcode.com/{args.y}/day/{args.d}\n")
 
     # cookies = http.cookiejar.MozillaCookieJar(os.path.join(setupPyAbsDir, "cookies.txt"))
     # cookies.load(os.path.join(setupPyAbsDir, "cookies.txt"), ignore_discard=True, ignore_expires=True)
@@ -119,7 +113,7 @@ def main():
             updateNow()
             if (release - now).total_seconds() > 60 * 60 * 24:
                 sys.exit(
-                    f"Not waiting more than a day... Quiting...\nTime remaining: {release - now}"
+                    f"{Fore.YELLOW}Not waiting more than a day... Quiting...\nTime remaining: {release - now}"
                 )
 
             countdown(release)
@@ -133,13 +127,11 @@ def main():
             page = requests.get(inputURL, cookies=cookies, headers=headers)
             if page.status_code == 200:
                 f.write(page.content.decode())
-                print(f"Input downloaded to {inputPath}")
+                print(f"{Fore.GREEN}Input downloaded to {inputPath}")
             else:
-                sys.exit(
-                    f"Input download failed\nError: {page.status_code}\n{page.content}"
-                )
+                sys.exit(f"{Fore.RED}Input download failed\nError: {page.status_code}\n{page.content}")
     else:
-        print("Inputfile already exists. Continuing...")
+        print(f"{Fore.YELLOW}Inputfile already exists. Continuing...")
 
     if not os.path.exists(taskPath := os.path.join(path, "task.md")) or args.f:
         with open(taskPath, "w") as f:
@@ -153,21 +145,19 @@ def main():
                 soup = BeautifulSoup(page.content, "html.parser")
                 childsoup = soup.find("article")
                 f.write(md(str(childsoup), heading_style="ATX"))
-                print(f"Task downloaded to {taskPath}")
+                print(f"{Fore.GREEN}Task downloaded to {taskPath}")
             else:
-                sys.exit(
-                    f"Task download failed\nError: {page.status_code}\n{page.content}"
-                )
+                sys.exit(f"{Fore.RED}Task download failed\nError: {page.status_code}\n{page.content}")
 
     # Success!
     if args.b:
-        print("Opening challenge!")
+        print(f"{Fore.GREEN}Opening challenge!")
         if os.path.exists(urlFile := os.path.join(path, "problem.url")):
             os.system(urlFile)
         else:
             webbrowser.open(URL)
     if args.c:
-        print("Opening VS Code!")
+        print(f"{Fore.GREEN}Opening VS Code!")
         os.system(f"code {path}")
 
 
