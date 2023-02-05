@@ -1,0 +1,6 @@
+pause
+pytz
+requests
+bs4
+python-dotenv
+markdownify

@@ -4,13 +4,16 @@ import sys
 import pyperclip
 import requests
 from bs4 import BeautifulSoup
+from colorama import Fore, Style
+from colorama import init as colorama_init
 from dotenv import load_dotenv
 from markdownify import markdownify as md
 
 load_dotenv()
 COOKIE = os.getenv("COOKIE")
 if COOKIE is None:
-    sys.exit("COOKIE not found in .env")
+    sys.exit(f"{Fore.RED}COOKIE not found in .env")
+colorama_init()
 
 
 def request_submit(year, day, part1, part2):
@@ -22,22 +25,23 @@ def request_submit(year, day, part1, part2):
     elif part1:
         submit(1, part1, url)
     else:
-        print("No answer generated.")
+        print(f"{Fore.YELLOW}No answer generated.")
 
 
 def submit(part, answer, url):
     data = {"level": str(part), "answer": str(answer)}
-    if (
-        input(f"Answer for part {part} ({answer}) generated. Send? (y/[n]) ").lower()
-        == "y"
-    ):
+    if input(f"Answer for part {part} ({answer}) generated. Send? (y/[n]) ").lower() == "y":
         response = requests.post(url, data=data, cookies={"session": COOKIE})
         if response.status_code == 200:
             soup = BeautifulSoup(response.content, "html.parser")
             childsoup = soup.find("article")
-            print(md(str(childsoup), heading_style="ATX"))
+            readable_response = md(str(childsoup), heading_style="ATX")
+            if "That's the right answer!" in readable_response:
+                print(f"{Fore.GREEN}Correct!")
+            else:
+                print(readable_response)
         else:
-            print(f"Error: {response.status_code}\n{response.content}")
+            print(f"{Fore.RED}Error: {response.status_code}\n{response.content}")
             print("ERROR!")
     else:
         print("Did not submit.")
