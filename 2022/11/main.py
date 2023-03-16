@@ -64,7 +64,7 @@ class Solution:
         else:
             worry %= self.lcm
 
-        true_false = "false" if worry % data[monkey_nr]["test"] else "true"
+        true_false = "true" if worry % data[monkey_nr]["test"] == 0 else "false"
         data[data[monkey_nr][true_false]]["items"].append(worry)
 
     def run(self, data, length, part1):
