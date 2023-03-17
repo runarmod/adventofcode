@@ -118,36 +118,38 @@ def main():
 
             countdown(release)
 
-        with open(inputPath, "w") as f:
-            cookies = {"session": COOKIE}
-            inputURL = f"{URL}/input"
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 6.1; U; ru; rv:5.0.1.6) Gecko/20110501 Firefox/5.0.1 Firefox/5.0.1"
-            }
-            page = requests.get(inputURL, cookies=cookies, headers=headers)
-            if page.status_code == 200:
+        cookies = {"session": COOKIE}
+        inputURL = f"{URL}/input"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 6.1; U; ru; rv:5.0.1.6) Gecko/20110501 Firefox/5.0.1 Firefox/5.0.1"
+        }
+        page = requests.get(inputURL, cookies=cookies, headers=headers)
+        if page.status_code == 200:
+            with open(inputPath, "w") as f:
                 f.write(page.content.decode())
-                print(f"{Fore.GREEN}Input downloaded to {inputPath}")
-            else:
-                sys.exit(f"{Fore.RED}Input download failed\nError: {page.status_code}\n{page.content}")
+            print(f"{Fore.GREEN}Input downloaded to {inputPath}")
+        else:
+            sys.exit(f"{Fore.RED}Input download failed\nError: {page.status_code}\n{page.content}")
     else:
         print(f"{Fore.YELLOW}Inputfile already exists. Continuing...")
 
     if not os.path.exists(taskPath := os.path.join(path, "task.md")) or args.f:
-        with open(taskPath, "w") as f:
-            cookies = {"session": COOKIE}
-            taskURL = f"{URL}"
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 6.1; U; ru; rv:5.0.1.6) Gecko/20110501 Firefox/5.0.1 Firefox/5.0.1"
-            }
-            page = requests.get(taskURL, cookies=cookies, headers=headers)
-            if page.status_code == 200:
-                soup = BeautifulSoup(page.content, "html.parser")
-                childsoup = soup.find("article")
+        cookies = {"session": COOKIE}
+        taskURL = f"{URL}"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 6.1; U; ru; rv:5.0.1.6) Gecko/20110501 Firefox/5.0.1 Firefox/5.0.1"
+        }
+        page = requests.get(taskURL, cookies=cookies, headers=headers)
+        if page.status_code == 200:
+            soup = BeautifulSoup(page.content, "html.parser")
+            childsoup = soup.find("article")
+            with open(taskPath, "w") as f:
                 f.write(md(str(childsoup), heading_style="ATX"))
-                print(f"{Fore.GREEN}Task downloaded to {taskPath}")
-            else:
-                sys.exit(f"{Fore.RED}Task download failed\nError: {page.status_code}\n{page.content}")
+            print(f"{Fore.GREEN}Task downloaded to {taskPath}")
+        else:
+            sys.exit(
+                f"{Fore.RED}Task download failed\nError: {page.status_code}\n{page.content}"
+            )
 
     # Success!
     if args.b:

@@ -7,8 +7,7 @@ from collections import defaultdict, deque
 from pprint import pprint
 
 sys.path.insert(0, "../../")
-from utils.util import copy_answer, request_submit, write_solution
-
+from utils import copy_answer, request_submit, write_solution
 
 def parseLine(line):
     return line
