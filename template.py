@@ -1,3 +1,4 @@
+import functools
 import itertools
 import os
 import re
@@ -8,6 +9,7 @@ from pprint import pprint
 
 sys.path.insert(0, "../../")
 from utils import copy_answer, request_submit, write_solution
+
 
 def parseLine(line):
     return line
