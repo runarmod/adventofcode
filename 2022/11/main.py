@@ -42,11 +42,11 @@ class Solution:
         self.lcm = math.lcm(*[self.data[i]["test"] for i in range(len(self.data))])
 
     def part1(self):
-        part_1_data = self.run(deepcopy(self.data), 20)
+        part_1_data = self.run(deepcopy(self.data), 20, part1=True)
         return self.calculate_score(part_1_data)
 
     def part2(self):
-        part_2_data = self.run(deepcopy(self.data), 10000)
+        part_2_data = self.run(deepcopy(self.data), 10000, part1=False)
         return self.calculate_score(part_2_data)
 
     def monkey_round(self, monkey_nr, data, part1=False):
@@ -64,13 +64,13 @@ class Solution:
         else:
             worry %= self.lcm
 
-        true_false = "false" if worry % data[monkey_nr]["test"] else "true"
+        true_false = "true" if worry % data[monkey_nr]["test"] == 0 else "false"
         data[data[monkey_nr][true_false]]["items"].append(worry)
 
-    def run(self, data, length):
+    def run(self, data, length, part1):
         for _ in range(length):
             for i in range(len(data)):
-                data = self.monkey_round(i, data)
+                data = self.monkey_round(i, data, part1=part1)
         return data
 
     def calculate_score(self, data):
