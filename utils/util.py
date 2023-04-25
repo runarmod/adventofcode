@@ -30,21 +30,22 @@ def request_submit(year, day, part1, part2):
 
 def submit(part, answer, url):
     data = {"level": str(part), "answer": str(answer)}
-    if input(f"Answer for part {part} ({answer}) generated. Send? (y/[n]) ").lower() == "y":
-        response = requests.post(url, data=data, cookies={"session": COOKIE})
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.content, "html.parser")
-            childsoup = soup.find("article")
-            readable_response = md(str(childsoup), heading_style="ATX")
-            if "That's the right answer!" in readable_response:
-                print(f"{Fore.GREEN}Correct!")
-            else:
-                print(readable_response)
-        else:
-            print(f"{Fore.RED}Error: {response.status_code}\n{response.content}")
-            print("ERROR!")
-    else:
+    if input(f"Answer for part {part} ({answer}) generated. Send? (y/[n]) ").lower() != "y":
         print("Did not submit.")
+        return
+
+    response = requests.post(url, data=data, cookies={"session": COOKIE})
+    if response.status_code != 200:
+        print(f"{Fore.RED}Error: {response.status_code}\n{response.content}")
+        return
+
+    soup = BeautifulSoup(response.content, "html.parser")
+    childsoup = soup.find("article")
+    readable_response = md(str(childsoup), heading_style="ATX")
+    if "That's the right answer!" in readable_response:
+        print(f"{Fore.GREEN}Correct!")
+    else:
+        print(f"{Fore.RED}{readable_response.strip()}")
 
 
 def write_solution(path, part1_text, part2_text):
