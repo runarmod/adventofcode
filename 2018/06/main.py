@@ -5,6 +5,8 @@ import re
 import string
 import pprint
 
+from tqdm import trange
+
 
 def parseLine(line):
     return tuple(map(int, re.findall(r"(\d+), (\d+)", line)[0]))
@@ -14,9 +16,7 @@ class Solution:
     def __init__(self, test=False):
         self.test = test
         filename = "testinput.txt" if self.test else "input.txt"
-        self.data = list(
-            parseLine(line) for line in open(filename).read().rstrip().split("\n")
-        )
+        self.data = list(parseLine(line) for line in open(filename).read().rstrip().split("\n"))
 
     def find_distances(self, x: int, y: int, c) -> int:
         return abs(x - c[0]) + abs(y - c[1])
@@ -46,7 +46,7 @@ class Solution:
 
                 if self.single_min(self.dist):
                     coords_area[self.min_index(self.dist)] += 1
-        pprint.pprint(coords_area)
+        # pprint.pprint(coords_area)
         max_ = 0
         for i, c in enumerate(self.data):
             if not self.is_infinite(c):
@@ -54,21 +54,28 @@ class Solution:
         # return max_
         # Jeg juksa litt her. Den returnerer 6717, men det er feil. Det er 4011 som er riktig. Ser ikke helt hva som er feil, men har ikke prøvd sykt mye
         return 4011
+    
+    def getDistInside(self):
+        for y in range(self.top[1], self.bottom[1] + 1):
+            for x in range(self.left[0], self.right[0] + 1):
+                self.dist = [self.find_distances(x, y, c) for c in self.data]
+                yield sum(self.dist)
 
     def part2(self):
+        minDist = min(self.getDistInside())
         count = 0
-        for i in range(self.left[0], self.right[0]):
-            for j in range(self.top[1], self.bottom[1]):
-                distances = [self.find_distances((i,j),c) for c in self.coords]
-                if sum(distances) < 10000:
+        dist = (10000 if not self.test else 32)
+        for i in trange(self.left[0] - dist + minDist, self.right[0] + dist + 1 - minDist):
+            for j in range(self.top[1] - dist + minDist, self.bottom[1] + dist + 1 - minDist):
+                if sum(self.find_distances(i, j, coord) for coord in self.data) < dist:
                     count += 1
         return count
 
 
 def main():
     test = Solution(test=True)
-    print(part1_test := f"(TEST) Part 1: {test.part1()}")
-    print(part2_test := f"(TEST) Part 2: {test.part2()}")
+    print(f"(TEST) Part 1: {test.part1()}")
+    print(f"(TEST) Part 2: {test.part2()}")
 
     solution = Solution()
     print(part1 := f"Part 1: {solution.part1()}")
@@ -81,6 +88,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
