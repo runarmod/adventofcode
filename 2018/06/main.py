@@ -1,9 +1,4 @@
-from ast import Tuple
-from collections import defaultdict
-import itertools
 import re
-import string
-import pprint
 
 from tqdm import trange
 
@@ -54,7 +49,7 @@ class Solution:
         # return max_
         # Jeg juksa litt her. Den returnerer 6717, men det er feil. Det er 4011 som er riktig. Ser ikke helt hva som er feil, men har ikke prøvd sykt mye
         return 4011
-    
+
     def getDistInside(self):
         for y in range(self.top[1], self.bottom[1] + 1):
             for x in range(self.left[0], self.right[0] + 1):
@@ -64,7 +59,7 @@ class Solution:
     def part2(self):
         minDist = min(self.getDistInside())
         count = 0
-        dist = (10000 if not self.test else 32)
+        dist = 32 if self.test else 10000
         for i in trange(self.left[0] - dist + minDist, self.right[0] + dist + 1 - minDist):
             for j in range(self.top[1] - dist + minDist, self.bottom[1] + dist + 1 - minDist):
                 if sum(self.find_distances(i, j, coord) for coord in self.data) < dist:
@@ -78,12 +73,8 @@ def main():
     print(f"(TEST) Part 2: {test.part2()}")
 
     solution = Solution()
-    print(part1 := f"Part 1: {solution.part1()}")
-    print(part2 := f"Part 2: {solution.part2()}")
-
-    if not solution.test:
-        with open("solution.txt", "w") as f:
-            f.write(f"{part1}\n{part2}\n")
+    print(f"Part 1: {solution.part1()}")
+    print(f"Part 2: {solution.part2()}")
 
 
 if __name__ == "__main__":
