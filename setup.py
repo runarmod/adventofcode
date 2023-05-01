@@ -35,7 +35,7 @@ def main():
     updateNow()
     parser = argparse.ArgumentParser(
         description="AOC setup and download.\n If neither day nor year is supplied, today's day will be used.",
-        epilog="Example: setup.py -d 13 -y 2018",
+        epilog="Example: `python3 setup.py -d 13 -y 2018 -cb`",
     )
     parser.add_argument("-d", help="Day", default=now.day, choices=range(1, 25 + 1), type=int)
     parser.add_argument("-t", help="Today", action="store_true", default=False, dest="today")
