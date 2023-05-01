@@ -30,7 +30,11 @@ def request_submit(year, day, part1, part2):
 
 def submit(part, answer, url):
     data = {"level": str(part), "answer": str(answer)}
-    if input(f"Answer for part {part} ({answer}) generated. Send? (y/[n]) ").lower() != "y":
+    if input(f"Answer for part {part} ({answer}) generated. Send? (y/[n]) ").lower() not in (
+        "y",
+        "ye",
+        "yes",
+    ):
         print("Did not submit.")
         return
 
@@ -60,8 +64,3 @@ def copy_answer(part1, part2):
 
     if copy:
         pyperclip.copy(copy)
-
-
-if __name__ == "__main__":
-    # copy_answer("part1", "part2")
-    print(COOKIE)
