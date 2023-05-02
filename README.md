@@ -4,16 +4,21 @@ This repository contains of all of my code from [advent of code](https://advento
 
 This repository contains a setup file, which will initiate a work-directory with a template, in addition to downloading the input using a cookie found in [.env](https://github.com/runarmod/adventofcode/blob/main/.env.example).
 
-Years completed:
+## My statistics
+<!-- START STATS -->
+```py
+[2022] 43*
+[2021] 42*
+[2020] 33*
+[2019] 14*
+[2018] 12*
+[2017] 13*
+[2016] 20*
+[2015] 50*
 
-- [x] 2015
-- [ ] 2016
-- [ ] 2017
-- [ ] 2018
-- [ ] 2019
-- [ ] 2020
-- [ ] 2021
-- [ ] 2022
+Total stars: 227*
+```
+<!-- END STATS -->
 
 ## Installation
 
