@@ -1,0 +1,9 @@
+[flake8]
+max-line-length = 100
+exclude =
+    .git,
+    __pycache__,
+per-file-ignores =
+    # Ignore unused imports in templates,
+    # since they should be ready to use
+    template.py: F401, E402
