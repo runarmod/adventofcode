@@ -1,7 +1,4 @@
-import itertools
-
-# import re
-import regex as re
+import re
 
 
 class Solution:
