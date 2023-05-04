@@ -1,6 +1,3 @@
-import itertools
-import primefac
-from numpy import prod
 import numpy as np
 
 
