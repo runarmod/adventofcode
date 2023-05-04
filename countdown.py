@@ -1,16 +1,35 @@
+"""
+A simple countdown timer that pauses the program until the given time.
+The program will end one second after the given time to make sure the website has updated.
+"""
+
 from datetime import datetime, timedelta
 import pause
 import pytz
 
 
-def format_time_until(now: datetime, time: datetime):
+def format_time_until(now: datetime, time: datetime) -> str:
+    """
+    Returns a string of the time left until the given time.
+    :param now: The current time.
+    :param time: The time to count down to.
+    :return: A string of the time left until the given time.
+    """
     time_left = (time - now) + timedelta(seconds=1)
-    hours = time_left.seconds // 3600
-    minutes = (time_left.seconds // 60) % 60
-    seconds = time_left.seconds % 60
-    return f"{str(hours).zfill(2)} hours, {str(minutes).zfill(2)} minutes, {str(seconds).zfill(2)} seconds"
 
-def countdown(time: datetime): # ENDS ONE SECOND LATE TO MAKE SURE WEBSITE HAS UPDATED
+    hours = str(time_left.seconds // 3600).zfill(2)
+    minutes = str((time_left.seconds // 60) % 60).zfill(2)
+    seconds = str(time_left.seconds % 60).zfill(2)
+
+    return f"{hours} hours, {minutes} minutes, {seconds} seconds"
+
+
+def countdown(time: datetime) -> None:  # ENDS ONE SECOND LATE TO MAKE SURE WEBSITE HAS UPDATED
+    """
+    Pauses the program until the given time.
+    :param time: The time to count down to.
+    :return: None
+    """
     now = datetime.now(tz=pytz.timezone(time.tzinfo.zone))
     timer = now.replace(microsecond=0) + timedelta(seconds=1)
     pause.until(timer)
@@ -24,10 +43,12 @@ def countdown(time: datetime): # ENDS ONE SECOND LATE TO MAKE SURE WEBSITE HAS U
     pause.seconds(1)
     print(" " * 60, end="\r")
 
-def main():
+
+def main() -> None:
     now = datetime.now(tz=pytz.timezone("EST"))
-    release = now.replace(microsecond=0, second=30, minute=9) #+ timedelta(seconds=10)
+    release = now.replace(microsecond=0, second=30, minute=9)  # + timedelta(seconds=10)
     countdown(release)
+
 
 if __name__ == "__main__":
     main()
