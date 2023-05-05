@@ -16,7 +16,7 @@ from colorama import init as colorama_init
 from dotenv import load_dotenv
 from markdownify import markdownify as md
 
-from utils.countdown import countdown
+from utils import countdown
 
 colorama_init(autoreset=True)
 load_dotenv()
