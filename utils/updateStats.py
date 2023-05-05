@@ -26,7 +26,7 @@ def update_README(stats: str) -> bool:
     if the stats were updated. False otherwise.
     """
     update_stats_py_abs_dir = os.path.abspath(os.path.dirname(__file__))
-    path = os.path.join(update_stats_py_abs_dir, "README.md")
+    path = os.path.join(update_stats_py_abs_dir, "..", "README.md")
 
     with open(path, "r", encoding="utf-8") as f:
         readme_content = f.read()
@@ -71,13 +71,16 @@ def get_stats_from_HTML(page: requests.Response) -> str:
     return stats + total_star_text
 
 
-def main() -> None:
+def update_stats() -> None:
+    """
+    Update the stats in the README file based on the stats on the website.
+    """
     URL = "https://adventofcode.com/events"
     cookies = {"session": COOKIE}
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 6.1; U; ru; rv:5.0.1.6) "
-        + "Gecko/20110501 Firefox/5.0.1 Firefox/5.0.1"
-    }
+    USER_AGENT = (
+        "Mozilla/5.0 (Windows NT 6.1; U; ru; rv:5.0.1.6) Gecko/20110501 Firefox/5.0.1 Firefox/5.0.1"
+    )
+    headers = {"User-Agent": USER_AGENT}
     page = requests.get(URL, cookies=cookies, headers=headers)
     if page.status_code != 200:
         sys.exit(f"{Fore.RED}Could not retrieve stats.\nError: {page.status_code}\n{page.content}")
@@ -87,6 +90,10 @@ def main() -> None:
         print(f"{Fore.GREEN}Stats updated in README.")
     else:
         print(f"{Fore.YELLOW}Stats already up to date in README. [No changes made]")
+
+
+def main() -> None:
+    update_stats()
 
 
 if __name__ == "__main__":
