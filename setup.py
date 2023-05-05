@@ -3,22 +3,20 @@
 # problem in the browser and start a vs code session
 import argparse
 import contextlib
-import http.cookiejar
 import os
 import sys
 import webbrowser
 from datetime import datetime
 
-import pause
 import pytz
 import requests
 from bs4 import BeautifulSoup
-from colorama import Fore, Style
+from colorama import Fore
 from colorama import init as colorama_init
 from dotenv import load_dotenv
 from markdownify import markdownify as md
 
-from countdown import countdown
+from utils.countdown import countdown
 
 colorama_init(autoreset=True)
 load_dotenv()
@@ -34,7 +32,8 @@ def main():
 
     updateNow()
     parser = argparse.ArgumentParser(
-        description="AOC setup and download.\n If neither day nor year is supplied, today's day will be used.",
+        description="AOC setup and download. If neither day nor year is supplied, "
+        + "today's day will be used.",
         epilog="Example: `python3 setup.py -d 13 -y 2018 -cb`",
     )
     parser.add_argument("-d", help="Day", default=now.day, choices=range(1, 25 + 1), type=int)
@@ -68,7 +67,9 @@ def main():
     )
     if now < release and not args.wait:
         sys.exit(
-            f"{Fore.RED}The problem doesn't exist yet.\nTime remaining: {str(release - now)}\nUse wait flag to wait for release."
+            f"{Fore.RED}The problem doesn't exist yet.\n"
+            + f"Time remaining: {str(release - now)}\n"
+            + "Use wait flag to wait for release."
         )
 
     # Make new year directory if it doesn't exist
@@ -102,8 +103,9 @@ def main():
             with open(urlPath, "w") as f:
                 f.write(f"[InternetShortcut]\nURL=https://adventofcode.com/{args.y}/day/{args.d}\n")
 
-    # cookies = http.cookiejar.MozillaCookieJar(os.path.join(setupPyAbsDir, "cookies.txt"))
-    # cookies.load(os.path.join(setupPyAbsDir, "cookies.txt"), ignore_discard=True, ignore_expires=True)
+    USER_AGENT = (
+        "Mozilla/5.0 (Windows NT 6.1; U; ru; rv:5.0.1.6) Gecko/20110501 Firefox/5.0.1 Firefox/5.0.1"
+    )
 
     # Make inputfile
     URL = f"https://adventofcode.com/{args.y}/day/{args.d}"
@@ -113,43 +115,39 @@ def main():
             updateNow()
             if (release - now).total_seconds() > 60 * 60 * 24:
                 sys.exit(
-                    f"{Fore.YELLOW}Not waiting more than a day... Quiting...\nTime remaining: {release - now}"
+                    f"{Fore.YELLOW}Not waiting more than a day... Quiting...\n"
+                    + f"Time remaining: {release - now}"
                 )
-
-            countdown(release)
+            if not countdown(release):
+                sys.exit(f"{Fore.RED}Countdown failed. Quiting...")
 
         cookies = {"session": COOKIE}
         inputURL = f"{URL}/input"
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 6.1; U; ru; rv:5.0.1.6) Gecko/20110501 Firefox/5.0.1 Firefox/5.0.1"
-        }
+        headers = {"User-Agent": USER_AGENT}
         page = requests.get(inputURL, cookies=cookies, headers=headers)
-        if page.status_code == 200:
-            with open(inputPath, "w") as f:
-                f.write(page.content.decode())
-            print(f"{Fore.GREEN}Input downloaded to {inputPath}")
-        else:
+        if page.status_code != 200:
             sys.exit(f"{Fore.RED}Input download failed\nError: {page.status_code}\n{page.content}")
+
+        with open(inputPath, "w") as f:
+            f.write(page.content.decode())
+        print(f"{Fore.GREEN}Input downloaded to {inputPath}")
     else:
         print(f"{Fore.YELLOW}Inputfile already exists. Continuing...")
 
     if not os.path.exists(taskPath := os.path.join(path, "task.md")) or args.f:
         cookies = {"session": COOKIE}
         taskURL = f"{URL}"
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 6.1; U; ru; rv:5.0.1.6) Gecko/20110501 Firefox/5.0.1 Firefox/5.0.1"
-        }
+        headers = {"User-Agent": USER_AGENT}
         page = requests.get(taskURL, cookies=cookies, headers=headers)
-        if page.status_code == 200:
-            soup = BeautifulSoup(page.content, "html.parser")
-            childsoup = soup.find("article")
-            with open(taskPath, "w") as f:
-                f.write(md(str(childsoup), heading_style="ATX"))
-            print(f"{Fore.GREEN}Task downloaded to {taskPath}")
-        else:
-            sys.exit(
-                f"{Fore.RED}Task download failed\nError: {page.status_code}\n{page.content}"
-            )
+
+        if page.status_code != 200:
+            sys.exit(f"{Fore.RED}Task download failed\nError: {page.status_code}\n{page.content}")
+
+        soup = BeautifulSoup(page.content, "html.parser")
+        childsoup = soup.find("article")
+        with open(taskPath, "w") as f:
+            f.write(md(str(childsoup), heading_style="ATX"))
+        print(f"{Fore.GREEN}Task downloaded to {taskPath}")
 
     # Success!
     if args.b:
