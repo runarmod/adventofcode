@@ -10,6 +10,8 @@ from colorama import init as colorama_init
 from dotenv import load_dotenv
 from markdownify import markdownify
 
+from utils.updateStats import update_stats
+
 colorama_init()
 
 load_dotenv()
@@ -57,6 +59,7 @@ def submit(part: int, answer: str, url: str) -> None:
     readable_response = markdownify(str(childsoup), heading_style="ATX").strip()
     if "That's the right answer!" in readable_response:
         print(f"{Fore.GREEN}Correct!")
+        update_stats()
     else:
         print(f"{Fore.RED}{readable_response}")
 
