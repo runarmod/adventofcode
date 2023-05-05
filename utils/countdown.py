@@ -24,24 +24,30 @@ def format_time_until(now: datetime, time: datetime) -> str:
     return f"{hours} hours, {minutes} minutes, {seconds} seconds"
 
 
-def countdown(time: datetime) -> None:  # ENDS ONE SECOND LATE TO MAKE SURE WEBSITE HAS UPDATED
+def countdown(time: datetime) -> bool:  # ENDS ONE SECOND LATE TO MAKE SURE WEBSITE HAS UPDATED
     """
     Pauses the program until the given time.
     :param time: The time to count down to.
-    :return: None
+    :return: True if the program was paused until the given time, False otherwise.
     """
     now = datetime.now(tz=pytz.timezone(time.tzinfo.zone))
     timer = now.replace(microsecond=0) + timedelta(seconds=1)
-    pause.until(timer)
 
-    print(f"Waiting for puzzle to be released at {time}")
-    while now < time:
-        print(f"Time left: {format_time_until(now, time)}", end="\r")
-        timer += timedelta(seconds=1)
-        pause.until(min(timer, time))
-        now = datetime.now(tz=pytz.timezone(time.tzinfo.zone))
-    pause.seconds(1)
+    try:
+        pause.until(timer)
+        print(f"Waiting for puzzle to be released at {time}")
+        while now < time:
+            print(f"Time left: {format_time_until(now, time)}", end="\r")
+            timer += timedelta(seconds=1)
+            pause.until(min(timer, time))
+            now = datetime.now(tz=pytz.timezone(time.tzinfo.zone))
+        pause.seconds(1)
+    except KeyboardInterrupt:
+        print(" " * 60, end="\r")
+        print("Aborted countdown.")
+        return False
     print(" " * 60, end="\r")
+    return True
 
 
 def main() -> None:
