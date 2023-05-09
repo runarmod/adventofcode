@@ -1,14 +1,4 @@
-import functools
-import itertools
-import os
 import re
-import string
-import sys
-from collections import defaultdict, deque
-from pprint import pprint
-
-sys.path.insert(0, "../../")
-from utils import copy_answer, request_submit, write_solution
 
 
 class Solution:
