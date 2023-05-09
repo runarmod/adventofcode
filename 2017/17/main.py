@@ -13,12 +13,16 @@ class Solution:
             spinlock.append(i)
         return spinlock[(spinlock.index(2017) + 1) % len(spinlock)]
 
+    # Speeds up process by not using a deque
+    # Previous solution for part 2 was 1 minute 10
+    # seconds, now it is 14 seconds
     def part2(self):
-        spinlock = deque([0])
-        for i in range(1, 50_000_000):
-            spinlock.rotate(-self.steps)
-            spinlock.append(i)
-        return spinlock[spinlock.index(0) + 1]
+        index = 0
+        for length in range(1, 50_000_000):
+            index = (index + self.steps) % length + 1
+            if index == 1:
+                value = length
+        return value
 
 
 def main():
