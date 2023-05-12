@@ -1,0 +1,22 @@
+a = 1
+b = 1
+d = 26
+if c != 0:
+    c = 7
+    while c != 0:
+        d++
+        c--
+while d != 0:
+    c = a
+    while b != 0:
+        a++
+        b--
+    b = c
+    d--
+c = 17
+while c != 0:
+    d = 18
+    while d != 0:
+        a++
+        d--
+    c--

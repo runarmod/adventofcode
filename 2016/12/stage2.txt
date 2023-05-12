@@ -1,0 +1,23 @@
+a = 1
+b = 1
+d = 26
+if c != 0: goto A
+goto C
+A: c = 7
+B: d++
+c--
+if c != 0: goto B
+C: cpy a c
+D: a++
+b--
+if b != 0: goto D
+cpy c b
+d--
+if d != 0: goto C
+c = 17
+E: d = 18
+F: a++
+d--
+if d != 0: goto F
+c--
+if c != 0: goto E
