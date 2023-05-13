@@ -16,10 +16,10 @@ This repository contains a setup file, which will initiate a work-directory with
 [2019] 14*
 [2018] 14*
 [2017] 50*
-[2016] 28*
+[2016] 32*
 [2015] 50*
 
-Total stars: 274*
+Total stars: 278*
 ```
 <!-- END STATS -->
 
