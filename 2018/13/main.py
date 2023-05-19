@@ -1,19 +1,9 @@
-import functools
-import itertools
-import os
-import re
-import string
-import sys
+from copy import deepcopy
 import time
-from collections import defaultdict, deque
-from pprint import pprint
 from enum import Enum
 
-sys.path.insert(0, "../../")
-from utils import copy_answer, request_submit, write_solution
 
-
-class Direction(Enum):
+class Dir(Enum):
     RIGHT = (1, 0)
     LEFT = (-1, 0)
     DOWN = (0, 1)
@@ -21,100 +11,155 @@ class Direction(Enum):
 
 
 def parseData(lines):
-    carts = []  # One cart is [x, y, direction]
-    legal_directions: dict[tuple[int, int], set[Direction]] = {}
+    carts = []  # One cart is [x, y, direction, turnCounter, index]
+    legal_directions: dict[tuple[int, int], set[Dir]] = {}
 
+    # Pad to not have to deal with index out of bounds
     lines = [" " * len(lines[0])] + [f" {line} " for line in lines] + [" " * len(lines[0])]
 
+    cart_index = 0
     for y, line in enumerate(lines):
-        for x, v in enumerate(line):
-            match v:
+        for x, c in enumerate(line):
+            match c:
                 case " ":
                     continue
+
+                case "|":
+                    legal_directions[(x, y)] = {Dir.UP, Dir.DOWN}
+
+                case "-":
+                    legal_directions[(x, y)] = {Dir.LEFT, Dir.RIGHT}
+
                 case "+":
                     legal_directions[(x, y)] = {
-                        Direction.UP,
-                        Direction.DOWN,
-                        Direction.LEFT,
-                        Direction.RIGHT,
+                        Dir.UP,
+                        Dir.DOWN,
+                        Dir.LEFT,
+                        Dir.RIGHT,
                     }
-                case "|":
-                    legal_directions[(x, y)] = {Direction.UP, Direction.DOWN}
-                case "-":
-                    legal_directions[(x, y)] = {Direction.LEFT, Direction.RIGHT}
+
                 case "/":
                     if lines[y][x + 1] in "-+><" and lines[y + 1][x] in "|+^v":
-                        legal_directions[(x, y)] = {Direction.RIGHT, Direction.DOWN}
+                        legal_directions[(x, y)] = {Dir.RIGHT, Dir.DOWN}
                     elif lines[y][x - 1] in "-+><" and lines[y - 1][x] in "|+^v":
-                        legal_directions[(x, y)] = {Direction.LEFT, Direction.UP}
+                        legal_directions[(x, y)] = {Dir.LEFT, Dir.UP}
                     else:
-                        raise RuntimeError("Invalid direction")
+                        raise RuntimeError("Something is wrong :(")
+
                 case "\\":
                     if lines[y][x + 1] in "-+><" and lines[y - 1][x] in "|+^v":
-                        legal_directions[(x, y)] = {Direction.RIGHT, Direction.UP}
+                        legal_directions[(x, y)] = {Dir.RIGHT, Dir.UP}
                     elif lines[y][x - 1] in "-+><" and lines[y + 1][x] in "|+^v":
-                        legal_directions[(x, y)] = {Direction.LEFT, Direction.DOWN}
+                        legal_directions[(x, y)] = {Dir.LEFT, Dir.DOWN}
                     else:
-                        raise RuntimeError("Invalid direction")
+                        raise RuntimeError("Something is wrong :(")
+
                 case _:
-                    direction = [Direction.UP, Direction.RIGHT, Direction.DOWN, Direction.LEFT][
-                        "^>v<".index(v)
-                    ]
+                    direction = [Dir.UP, Dir.RIGHT, Dir.DOWN, Dir.LEFT]["^>v<".index(c)]
                     if lines[y][x + 1] in "-+></\\" and lines[y][x - 1] in "-+></\\":
-                        legal_directions[(x, y)] = {Direction.LEFT, Direction.RIGHT}
+                        legal_directions[(x, y)] = {Dir.LEFT, Dir.RIGHT}
                     elif lines[y + 1][x] in "|+^v/\\" and lines[y - 1][x] in "|+^v/\\":
-                        legal_directions[(x, y)] = {Direction.DOWN, Direction.UP}
+                        legal_directions[(x, y)] = {Dir.DOWN, Dir.UP}
                     else:
-                        raise RuntimeError("Invalid")
-                    carts.append([x, y, direction])
+                        raise RuntimeError("Something is wrong :(")
+
+                    carts.append([x, y, direction, 0, cart_index])
+                    cart_index += 1
+
+    # Remove padding
     legal_directions = {(k[0] - 1, k[1] - 1): v for k, v in legal_directions.items()}
-    carts = [[x - 1, y - 1, direction, 0] for x, y, direction in carts]
+    carts = [[x - 1, y - 1, direction, turns, index] for x, y, direction, turns, index in carts]
+
     return legal_directions, carts
 
 
 class Solution:
     def __init__(self, test=False):
-        self.test = test
-        filename = "testinput.txt" if self.test else "input.txt"
-        self.legal_directions, self.carts = parseData(open(filename).read().rstrip().split("\n"))
+        filename = "testinput.txt" if test else "input.txt"
+        self.dir_map, self.carts = parseData(open(filename).read().rstrip().split("\n"))
 
     def opposite_direction(self, direction):
-        match direction:
-            case Direction.UP:
-                return Direction.DOWN
-            case Direction.DOWN:
-                return Direction.UP
-            case Direction.LEFT:
-                return Direction.RIGHT
-            case Direction.RIGHT:
-                return Direction.LEFT
+        return Dir((-direction.value[0], -direction.value[1]))
 
-        raise RuntimeError("Invalid direction")
-
-    def drive_cart(self, cart):
+    def turn_cart(self, cart):
         new_cart = cart[:]
         direction = new_cart[2]
-        dx, dy = direction
-        new_cart[0] += dx
-        new_cart[1] += dy
-        optional_directions = self.legal_directions[(new_cart[0], new_cart[1])].difference(
+        turn = new_cart[3]
+        if turn == 0:
+            # Turn left
+            new_cart[2] = Dir((direction.value[1], -direction.value[0]))
+        elif turn == 2:
+            # Turn right
+            new_cart[2] = Dir((-direction.value[1], direction.value[0]))
+
+        # Update turn counter
+        new_cart[3] = (turn + 1) % 3
+        return new_cart
+
+    def drive_cart(self, cart):
+        new = cart[:]
+        direction = new[2]
+
+        new[0] += direction.value[0]
+        new[1] += direction.value[1]
+
+        optional_directions = self.dir_map[(new[0], new[1])].difference(
             {
                 self.opposite_direction(direction),
             }
         )
 
+        # If there is only one option, we can just set the direction
         if len(optional_directions) == 1:
-            new_cart[2] = next(iter(optional_directions))
-            return new_cart
+            new[2] = next(iter(optional_directions))
+            return new
+
+        new = self.turn_cart(new)
+        return new
+
+    def get_crashed(self, cart, all_carts):
+        return next(
+            (other_cart for other_cart in all_carts if cart[:2] == other_cart[:2]),
+            None,
+        )
 
     def part1(self):
-        for _ in itertools.count():
-            for cart_index, cart in enumerate(self.carts):
-                self.carts[cart_index] = self.drive_cart(cart)
-        return None
+        carts = deepcopy(self.carts)
+
+        while True:
+            for i, cart in enumerate(carts):
+                new_cart = self.drive_cart(cart)
+
+                # Get first crash
+                if self.get_crashed(new_cart, carts) is not None:
+                    return ",".join(map(str, new_cart[:2]))
+
+                # Update cart
+                carts[i] = new_cart
+            # Keep carts sorted low y first, then low x
+            carts.sort(key=lambda x: (x[1], x[0]))
 
     def part2(self):
-        return None
+        carts = deepcopy(self.carts)
+
+        while len(carts) > 1:
+            delete = set()
+
+            for i, cart in enumerate(carts):
+                new_cart = self.drive_cart(cart)
+
+                # Keep track of crashed carts
+                if (other_cart := self.get_crashed(new_cart, carts)) is not None:
+                    delete.add(new_cart[-1])
+                    delete.add(other_cart[-1])
+                    continue
+
+                carts[i] = new_cart
+
+            # Remove crashed carts
+            carts = [cart for cart in carts if cart[-1] not in delete]
+            carts.sort(key=lambda x: (x[1], x[0]))
+        return ",".join(map(str, carts[0][:2]))
 
 
 def main():
@@ -125,16 +170,10 @@ def main():
     print(f"(TEST) Part 2: {test.part2()}")
 
     solution = Solution()
-    part1 = solution.part1()
-    part2 = solution.part2()
-    print(part1_text := f"Part 1: {part1}")
-    print(part2_text := f"Part 2: {part2}")
+    print(f"Part 1: {solution.part1()}")
+    print(f"Part 2: {solution.part2()}")
 
     print(f"\nTotal time: {time.perf_counter() - start : .4f} sec")
-
-    copy_answer(part1, part2)
-    write_solution(os.path.dirname(os.path.realpath(__file__)), part1_text, part2_text)
-    request_submit(2018, 13, part1, part2)
 
 
 if __name__ == "__main__":
