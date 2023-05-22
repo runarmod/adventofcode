@@ -14,12 +14,12 @@ This repository contains a setup file, which will initiate a work-directory with
 [2021] 42*
 [2020] 33*
 [2019] 14*
-[2018] 30*
+[2018] 32*
 [2017] 50*
 [2016] 50*
 [2015] 50*
 
-Total stars: 312*
+Total stars: 314*
 ```
 <!-- END STATS -->
 
