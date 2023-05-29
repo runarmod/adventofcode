@@ -1,0 +1,37 @@
+#ip 2
+register[2] = register[2] + 16
+register[4] = 1 // COMMENT 0 
+register[1] = 1 // COMMENT 0 
+register[3] = register[4] * register[1]
+register[3] = register[3] == register[5]
+register[2] = register[3] + register[2] 
+register[2] = register[2] + 1
+register[0] = register[4] + register[0] 
+register[1] = register[1] + 1
+register[3] = register[1] > register[5] 
+register[2] = register[2] + register[3] 
+register[2] = 2 // COMMENT 5 
+register[4] = register[4] + 1
+register[3] = register[4] > register[5] 
+register[2] = register[3] + register[2] 
+register[2] = 1 // COMMENT 9 
+register[2] = register[2] * register[2]
+register[5] = register[5] + 2
+register[5] = register[5] * register[5]
+register[5] = register[2] * register[5]
+register[5] = register[5] * 11 
+register[3] = register[3] + 8
+register[3] = register[3] * register[2]
+register[3] = register[3] + 5
+register[5] = register[5] + register[3] 
+register[2] = register[2] + register[0] 
+register[2] = 0 // COMMENT 9 
+register[3] = register[2] // COMMENT 8 
+register[3] = register[3] * register[2]
+register[3] = register[2] + register[3] 
+register[3] = register[2] * register[3]
+register[3] = register[3] * 14 
+register[3] = register[3] * register[2]
+register[5] = register[5] + register[3] 
+register[0] = 0 // COMMENT 6 
+register[2] = 0 // COMMENT 0 
