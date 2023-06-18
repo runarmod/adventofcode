@@ -1,2 +1,2 @@
 Part 1: 6208
-Part 2: None
+Part 2: 1039
