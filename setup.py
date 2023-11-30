@@ -36,8 +36,12 @@ def main():
         + "today's day will be used.",
         epilog="Example: `python3 setup.py -d 13 -y 2018 -cb`",
     )
-    parser.add_argument("-d", help="Day", default=now.day, choices=range(1, 25 + 1), type=int)
-    parser.add_argument("-t", help="Today", action="store_true", default=False, dest="today")
+    parser.add_argument(
+        "-d", help="Day", default=now.day, choices=range(1, 25 + 1), type=int
+    )
+    parser.add_argument(
+        "-t", help="Today", action="store_true", default=False, dest="today"
+    )
     parser.add_argument(
         "-y", help="Year", default=now.year, choices=range(2015, now.year + 1), type=int
     )
@@ -85,7 +89,10 @@ def main():
 
     if not args.i:
         # Crate testinput file
-        if not os.path.exists(testPath := os.path.join(path, "testinput.txt")) or args.f:
+        if (
+            not os.path.exists(testPath := os.path.join(path, "testinput.txt"))
+            or args.f
+        ):
             open(testPath, "w").close()
 
         # Create part 1 and 2
@@ -101,14 +108,20 @@ def main():
         # Create URL file
         if not os.path.exists(urlPath := os.path.join(path, "problem.url")) or args.f:
             with open(urlPath, "w") as f:
-                f.write(f"[InternetShortcut]\nURL=https://adventofcode.com/{args.y}/day/{args.d}\n")
+                f.write(
+                    f"[InternetShortcut]\nURL=https://adventofcode.com/{args.y}/day/{args.d}\n"
+                )
 
-    USER_AGENT = (
-        "Mozilla/5.0 (Windows NT 6.1; U; ru; rv:5.0.1.6) Gecko/20110501 Firefox/5.0.1 Firefox/5.0.1"
-    )
+    URL = f"https://adventofcode.com/{args.y}/day/{args.d}"
+
+    # Open VS Code
+    if args.c:
+        print(f"{Fore.GREEN}Opening VS Code!")
+        os.system(f"code {path}")
+
+    USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; U; ru; rv:5.0.1.6) Gecko/20110501 Firefox/5.0.1 Firefox/5.0.1"
 
     # Make inputfile
-    URL = f"https://adventofcode.com/{args.y}/day/{args.d}"
     if not os.path.exists(inputPath := os.path.join(path, "input.txt")) or args.f:
         if args.wait:
             # Wait for puzzle to be released
@@ -126,7 +139,9 @@ def main():
         headers = {"User-Agent": USER_AGENT}
         page = requests.get(inputURL, cookies=cookies, headers=headers)
         if page.status_code != 200:
-            sys.exit(f"{Fore.RED}Input download failed\nError: {page.status_code}\n{page.content}")
+            sys.exit(
+                f"{Fore.RED}Input download failed\nError: {page.status_code}\n{page.content}"
+            )
 
         with open(inputPath, "w") as f:
             f.write(page.content.decode())
@@ -141,7 +156,9 @@ def main():
         page = requests.get(taskURL, cookies=cookies, headers=headers)
 
         if page.status_code != 200:
-            sys.exit(f"{Fore.RED}Task download failed\nError: {page.status_code}\n{page.content}")
+            sys.exit(
+                f"{Fore.RED}Task download failed\nError: {page.status_code}\n{page.content}"
+            )
 
         soup = BeautifulSoup(page.content, "html.parser")
         childsoup = soup.find("article")
@@ -149,16 +166,10 @@ def main():
             f.write(md(str(childsoup), heading_style="ATX"))
         print(f"{Fore.GREEN}Task downloaded to {taskPath}")
 
-    # Success!
+    # Open browser
     if args.b:
         print(f"{Fore.GREEN}Opening challenge!")
-        if os.path.exists(urlFile := os.path.join(path, "problem.url")):
-            os.system(urlFile)
-        else:
-            webbrowser.open(URL)
-    if args.c:
-        print(f"{Fore.GREEN}Opening VS Code!")
-        os.system(f"code {path}")
+        webbrowser.open(URL)
 
 
 if __name__ == "__main__":
