@@ -10,16 +10,17 @@ This repository contains a setup file, which will initiate a work-directory with
 
 <!-- START STATS -->
 ```py
+[2023]  2*
 [2022] 50*
 [2021] 42*
 [2020] 33*
-[2019] 14*
+[2019] 15*
 [2018] 50*
 [2017] 50*
 [2016] 50*
 [2015] 50*
 
-Total stars: 339*
+Total stars: 342*
 ```
 <!-- END STATS -->
 
