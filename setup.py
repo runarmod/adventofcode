@@ -40,12 +40,13 @@ def main():
         "-d", help="Day", default=now.day, choices=range(1, 25 + 1), type=int
     )
     parser.add_argument(
-        "-t", help="Today", action="store_true", default=False, dest="today"
-    )
-    parser.add_argument(
         "-y", help="Year", default=now.year, choices=range(2015, now.year + 1), type=int
     )
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        "-t", help="Today", action="store_true", default=False, dest="today"
+    )
+    group.add_argument(
         "-w",
         "--wait",
         action="store_true",
@@ -63,6 +64,10 @@ def main():
     args = parser.parse_args()
     if args.today:
         args.d = now.day
+        args.y = now.year
+
+    if args.wait:
+        args.d = now.day + 1
         args.y = now.year
 
     # Find how long until
