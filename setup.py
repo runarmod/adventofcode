@@ -74,11 +74,18 @@ def main():
     release = now.replace(
         year=args.y, month=12, day=args.d, hour=0, minute=0, second=0, microsecond=0
     )
+
     if now < release and not args.wait:
         sys.exit(
             f"{Fore.RED}The problem doesn't exist yet.\n"
             + f"Time remaining: {str(release - now)}\n"
             + "Use wait flag to wait for release."
+        )
+
+    if args.wait and (release - now).total_seconds() > 60 * 60:
+        sys.exit(
+            f"{Fore.YELLOW}Not waiting more than an hour... Quiting...\n"
+            + f"Time remaining: {release - now}"
         )
 
     # Make new year directory if it doesn't exist
@@ -131,11 +138,6 @@ def main():
         if args.wait:
             # Wait for puzzle to be released
             updateNow()
-            if (release - now).total_seconds() > 60 * 60 * 24:
-                sys.exit(
-                    f"{Fore.YELLOW}Not waiting more than a day... Quiting...\n"
-                    + f"Time remaining: {release - now}"
-                )
             if not countdown(release):
                 sys.exit(f"{Fore.RED}Countdown failed. Quiting...")
 
