@@ -156,23 +156,6 @@ def main():
     else:
         print(f"{Fore.YELLOW}Inputfile already exists. Continuing...")
 
-    if not os.path.exists(taskPath := os.path.join(path, "task.md")) or args.f:
-        cookies = {"session": COOKIE}
-        taskURL = f"{URL}"
-        headers = {"User-Agent": USER_AGENT}
-        page = requests.get(taskURL, cookies=cookies, headers=headers)
-
-        if page.status_code != 200:
-            sys.exit(
-                f"{Fore.RED}Task download failed\nError: {page.status_code}\n{page.content}"
-            )
-
-        soup = BeautifulSoup(page.content, "html.parser")
-        childsoup = soup.find("article")
-        with open(taskPath, "w") as f:
-            f.write(md(str(childsoup), heading_style="ATX"))
-        print(f"{Fore.GREEN}Task downloaded to {taskPath}")
-
     # Open browser
     if args.b:
         print(f"{Fore.GREEN}Opening challenge!")
