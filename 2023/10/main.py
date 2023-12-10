@@ -1,3 +1,4 @@
+from functools import lru_cache
 import itertools
 import time
 from collections import defaultdict
@@ -5,34 +6,20 @@ import networkx as nx
 
 
 def parseLine(line, y, height):
-    all_dirs = defaultdict(set)
+    all_dirs: defaultdict[tuple[int, int], set[tuple[int, int]]] = defaultdict(set)
     for x, c in enumerate(line):
         if c == ".":
             continue
         dirs = []
-        if c == "|":
+        if c in "|7FS":
             dirs.append((x, y + 1))
+        if c in "|LJS":
             dirs.append((x, y - 1))
-        elif c == "-":
+        if c in "-J7S":
             dirs.append((x - 1, y))
+        if c in "-LFS":
             dirs.append((x + 1, y))
-        elif c == "L":
-            dirs.append((x, y - 1))
-            dirs.append((x + 1, y))
-        elif c == "J":
-            dirs.append((x, y - 1))
-            dirs.append((x - 1, y))
-        elif c == "7":
-            dirs.append((x, y + 1))
-            dirs.append((x - 1, y))
-        elif c == "F":
-            dirs.append((x, y + 1))
-            dirs.append((x + 1, y))
-        elif c == "S":
-            dirs.append((x, y + 1))
-            dirs.append((x, y - 1))
-            dirs.append((x - 1, y))
-            dirs.append((x + 1, y))
+
         for d in dirs:
             if 0 <= d[0] < len(line) and 0 <= d[1] < height:
                 all_dirs[(x, y)].add(d)
@@ -55,24 +42,17 @@ class Solution:
             ),
         )
 
-        neighbours = defaultdict(set)
+        neighbours: defaultdict[tuple[int, int], set[tuple[int, int]]] = defaultdict(
+            set
+        )
         for line in [parseLine(line, y, len(self.f)) for y, line in enumerate(self.f)]:
             for k, v in line.items():
                 for v2 in v:
                     neighbours[k].add(v2)
 
-        # The map should be undirected, so I create an edge if to nodes points to each other.
-        _map = [
-            ((x, y), (x + dx, y + dy))
-            for x, y in itertools.product(range(len(self.f[0])), range(len(self.f)))
-            for dx, dy in ((0, 1), (1, 0), (0, -1), (-1, 0))
-            if 0 <= x + dx < len(self.f[0])
-            and 0 <= y + dy < len(self.f)
-            and (x + dx, y + dy) in neighbours[(x, y)]
-            and (x, y) in neighbours[(x + dx, y + dy)]
-        ]
+        self.graph: "nx.Graph" = nx.DiGraph(neighbours).to_undirected(reciprocal=True)
 
-        self.graph = nx.Graph(_map)
+        self.cycle_dict = self.create_cycle_dict(self.graph)
 
     def part1(self):
         return max(
@@ -80,28 +60,33 @@ class Solution:
         )
 
     def part2(self):
-        cycle_dict = self.create_cycle_dict(self.graph)
-        inside = 0
-        for y in range(len(self.f)):
-            for x in range(len(self.f[y])):
-                if (x, y) in cycle_dict.keys():
-                    continue
-                cycles = []
-                for n in range(x - 1, -1, -1):
-                    if (n, y) in cycle_dict.keys():
-                        cycles.append((n, y))
-                inside += self.count_crossings_right_to_left(cycles, cycle_dict) % 2
-        return inside
+        """
+        Find the number of coords inside the graph (the cycle line should not be counted).
+        """
+        return sum(
+            self.inside(
+                tuple((n, y) for n in range(x - 1, -1, -1) if (n, y) in self.cycle_dict)
+            )
+            for y in range(len(self.f))
+            for x in range(len(self.f[y]))
+            if (x, y) not in self.cycle_dict
+        )
 
-    def create_cycle_dict(self, graph):
-        cycle_graph = nx.find_cycle(graph)
-        cycle_dict = defaultdict(set)
+    def create_cycle_dict(
+        self, graph: "nx.Graph"
+    ) -> defaultdict[tuple[int, int], set[tuple[int, int]]]:
+        cycle_graph: list[tuple[tuple[int, int], tuple[int, int]]] = nx.find_cycle(
+            graph
+        )
+        cycle_dict: defaultdict[tuple[int, int], set[tuple[int, int]]] = defaultdict(
+            set
+        )
         for fr, to in cycle_graph:
             cycle_dict[fr].add(to)
             cycle_dict[to].add(fr)
         return cycle_dict
 
-    def count_crossings_right_to_left(self, cycles, cycle_dict):
+    def inside(self, cycles: list[tuple[int, int]]) -> bool:
         """
         Crossing the cycle line an odd number of times means we are inside the cycle.
         To determine if we are inside the cycle, we need to count the number of times
@@ -112,60 +97,41 @@ class Solution:
         "J" then "L" (from the left, looking like "LJ" in the graph), we know we
         do not cross the cycle line (same with "F7"). If we encounter a "J" then
         "F" ("FJ"), we know we cross the cycle line (same with "L7").
+
+        Therefore we can check if the sum of "|", "F" and "7" is odd, and if so,
+        we are inside the cycle.
         """
+        cycles_letters = self.create_letters_from_cycle_coord(tuple(cycles))
+        return sum(cycles_letters.count(letter) for letter in "|F7") % 2
 
-        # Start with turning coords to letters to better visualize the problem
-        cycles_letters = self.create_letters_from_cycle_coord(cycles, cycle_dict)
-
-        # Want to combine all crossings to "|"'s, so we can count the number of
-        # real crossings by counting the number of "|"'s.
-        while not all(c == "|" for c in cycles_letters):
-            _new = []
-            i = 0
-            while i < len(cycles_letters):
-                # Direct crossing:
-                if cycles_letters[i] == "|":
-                    _new.append("|")
-                    i += 1
-                elif i == len(cycles_letters) - 1:
-                    i += 1
-                # Indirect crossings:
-                elif cycles_letters[i] == "L" and cycles_letters[i + 1] == "7":
-                    i += 2
-                    cycles_letters.append("|")
-                elif cycles_letters[i] == "F" and cycles_letters[i + 1] == "J":
-                    i += 2
-                    cycles_letters.append("|")
-                # Non-crossings:
-                elif cycles_letters[i] == "F" and cycles_letters[i + 1] == "7":
-                    i += 2
-                elif cycles_letters[i] == "L" and cycles_letters[i + 1] == "J":
-                    i += 2
-            cycles_letters = _new
-        return len(cycles_letters)
-
-    def create_letters_from_cycle_coord(self, cycles, cycle_dict):
+    @lru_cache(maxsize=None)
+    def create_letters_from_cycle_coord(
+        self, cycles: tuple[tuple[int, int], ...]
+    ) -> str:
         # Could check self.f to determine the letters, but this was the first
         # solution I came up with, and it works. Also, it handles "S" automatically
         # by looking at all coords in the cycle's neighbours.
-        cycles_letters = []
-        for x, y in cycles:
-            if len({(x - 1, y), (x + 1, y)} & cycle_dict[(x, y)]) == 2:  # -
-                continue
-            if len({(x, y - 1), (x, y + 1)} & cycle_dict[(x, y)]) == 2:  # |
-                cycles_letters.append("|")
-            if len({(x - 1, y), (x, y - 1)} & cycle_dict[(x, y)]) == 2:  # J
-                cycles_letters.append("J")
-            if len({(x + 1, y), (x, y - 1)} & cycle_dict[(x, y)]) == 2:  # L
-                cycles_letters.append("L")
-            if len({(x - 1, y), (x, y + 1)} & cycle_dict[(x, y)]) == 2:  # 7
-                cycles_letters.append("7")
-            if len({(x + 1, y), (x, y + 1)} & cycle_dict[(x, y)]) == 2:  # F
-                cycles_letters.append("F")
 
-        # The letters are stored right to left for the direction right to left in
-        # the graph, so reverse to better visualize.
-        return cycles_letters[::-1]
+        if len(cycles) == 0:
+            return ""
+
+        _next = self.create_letters_from_cycle_coord(cycles[:-1])
+        neighbors = self.cycle_dict[cycles[-1]]
+        x, y = cycles[-1]
+
+        if len({(x - 1, y), (x + 1, y)} & neighbors) == 2:  # -
+            return "" + _next
+        if len({(x, y - 1), (x, y + 1)} & neighbors) == 2:  # |
+            return "|" + _next
+        if len({(x - 1, y), (x, y - 1)} & neighbors) == 2:  # J
+            return "J" + _next
+        if len({(x + 1, y), (x, y - 1)} & neighbors) == 2:  # L
+            return "L" + _next
+        if len({(x - 1, y), (x, y + 1)} & neighbors) == 2:  # 7
+            return "7" + _next
+        if len({(x + 1, y), (x, y + 1)} & neighbors) == 2:  # F
+            return "F" + _next
+        assert False, "Should not happen"
 
 
 def main():
