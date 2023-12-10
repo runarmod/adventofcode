@@ -1,4 +1,3 @@
-from functools import lru_cache
 import itertools
 import time
 from collections import defaultdict
@@ -30,11 +29,10 @@ class Solution:
     def __init__(self, test=False):
         self.test = test
         filename = "testinput.txt" if self.test else "input.txt"
-        self.parse(filename)
-
-    def parse(self, filename):
         self.f = open(filename).read().rstrip().split("\n")
+        self.parse_file()
 
+    def parse_file(self):
         self.start = next(
             filter(
                 lambda z: self.f[z[1]][z[0]] == "S",
@@ -42,52 +40,35 @@ class Solution:
             ),
         )
 
-        neighbours: defaultdict[tuple[int, int], set[tuple[int, int]]] = defaultdict(
-            set
-        )
+        neighbours: dict[tuple[int, int], set[tuple[int, int]]] = defaultdict(set)
         for line in [parseLine(line, y, len(self.f)) for y, line in enumerate(self.f)]:
             for k, v in line.items():
                 for v2 in v:
                     neighbours[k].add(v2)
 
-        self.graph: "nx.Graph" = nx.DiGraph(neighbours).to_undirected(reciprocal=True)
-
-        self.cycle_dict = self.create_cycle_dict(self.graph)
-
-    def part1(self):
-        return max(
-            nx.single_source_shortest_path_length(self.graph, self.start).values()
-        )
-
-    def part2(self):
-        """
-        Find the number of coords inside the graph (the cycle line should not be counted).
-        """
-        return sum(
-            self.inside(
-                tuple((n, y) for n in range(x - 1, -1, -1) if (n, y) in self.cycle_dict)
-            )
-            for y in range(len(self.f))
-            for x in range(len(self.f[y]))
-            if (x, y) not in self.cycle_dict
+        self.cycle_dict = self.create_cycle_dict(
+            nx.DiGraph(neighbours).to_undirected(reciprocal=True)
         )
 
     def create_cycle_dict(
         self, graph: "nx.Graph"
-    ) -> defaultdict[tuple[int, int], set[tuple[int, int]]]:
+    ) -> dict[tuple[int, int], set[tuple[int, int]]]:
         cycle_graph: list[tuple[tuple[int, int], tuple[int, int]]] = nx.find_cycle(
             graph
         )
-        cycle_dict: defaultdict[tuple[int, int], set[tuple[int, int]]] = defaultdict(
-            set
-        )
+        cycle_dict = defaultdict(set)
         for fr, to in cycle_graph:
             cycle_dict[fr].add(to)
             cycle_dict[to].add(fr)
         return cycle_dict
 
-    def inside(self, cycles: list[tuple[int, int]]) -> bool:
+    def part1(self) -> int:
+        return len(self.cycle_dict) // 2
+
+    def part2(self) -> int:
         """
+        Find the number of coords inside the graph (the cycle line should not be counted).
+
         Crossing the cycle line an odd number of times means we are inside the cycle.
         To determine if we are inside the cycle, we need to count the number of times
         we cross the cycle line. However, we need to be careful about the direction
@@ -101,37 +82,42 @@ class Solution:
         Therefore we can check if the sum of "|", "F" and "7" is odd, and if so,
         we are inside the cycle.
         """
-        cycles_letters = self.create_letters_from_cycle_coord(tuple(cycles))
-        return sum(cycles_letters.count(letter) for letter in "|F7") % 2
+        new_graph = self.get_graph_only_in_cycle()
+        inside_count = 0
+        for y in range(len(self.f)):
+            in_out_changes = 0
+            for x in range(len(self.f[y])):
+                if new_graph[y][x] in "|F7":
+                    in_out_changes += 1
+                elif new_graph[y][x] in ".":
+                    inside_count += in_out_changes % 2
+        return inside_count
 
-    @lru_cache(maxsize=None)
-    def create_letters_from_cycle_coord(
-        self, cycles: tuple[tuple[int, int], ...]
-    ) -> str:
-        # Could check self.f to determine the letters, but this was the first
-        # solution I came up with, and it works. Also, it handles "S" automatically
-        # by looking at all coords in the cycle's neighbours.
-
-        if len(cycles) == 0:
-            return ""
-
-        _next = self.create_letters_from_cycle_coord(cycles[:-1])
-        neighbors = self.cycle_dict[cycles[-1]]
-        x, y = cycles[-1]
-
-        if len({(x - 1, y), (x + 1, y)} & neighbors) == 2:  # -
-            return "" + _next
-        if len({(x, y - 1), (x, y + 1)} & neighbors) == 2:  # |
-            return "|" + _next
-        if len({(x - 1, y), (x, y - 1)} & neighbors) == 2:  # J
-            return "J" + _next
-        if len({(x + 1, y), (x, y - 1)} & neighbors) == 2:  # L
-            return "L" + _next
-        if len({(x - 1, y), (x, y + 1)} & neighbors) == 2:  # 7
-            return "7" + _next
-        if len({(x + 1, y), (x, y + 1)} & neighbors) == 2:  # F
-            return "F" + _next
-        assert False, "Should not happen"
+    def get_graph_only_in_cycle(self) -> list[str]:
+        lines = []
+        for y in range(len(self.f)):
+            line = ""
+            for x in range(len(self.f[0])):
+                if (x, y) not in self.cycle_dict:
+                    line += "."
+                    continue
+                neighbors = self.cycle_dict[(x, y)]
+                if len({(x - 1, y), (x + 1, y)} & neighbors) == 2:  # -
+                    line += "-"
+                elif len({(x, y - 1), (x, y + 1)} & neighbors) == 2:  # |
+                    line += "|"
+                elif len({(x - 1, y), (x, y - 1)} & neighbors) == 2:  # J
+                    line += "J"
+                elif len({(x + 1, y), (x, y - 1)} & neighbors) == 2:  # L
+                    line += "L"
+                elif len({(x - 1, y), (x, y + 1)} & neighbors) == 2:  # 7
+                    line += "7"
+                elif len({(x + 1, y), (x, y + 1)} & neighbors) == 2:  # F
+                    line += "F"
+                else:
+                    assert False, "Should not happen"
+            lines.append(line)
+        return lines
 
 
 def main():
