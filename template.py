@@ -33,8 +33,10 @@ def main():
     start = time.perf_counter()
 
     test = Solution(test=True)
-    print(f"(TEST) Part 1: {test.part1()}")
-    print(f"(TEST) Part 2: {test.part2()}")
+    test1 = test.part1()
+    test2 = test.part2()
+    print(f"(TEST) Part 1: {test1}, \t{'correct :)' if test1 == None else 'wrong :('}")
+    print(f"(TEST) Part 2: {test2}, \t{'correct :)' if test2 == None else 'wrong :('}")
 
     solution = Solution()
     part1 = solution.part1()
