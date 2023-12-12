@@ -4,6 +4,7 @@
 import argparse
 import contextlib
 import os
+import re
 import sys
 import webbrowser
 from datetime import datetime
@@ -40,6 +41,14 @@ def main():
     parser.add_argument(
         "-y", help="Year", default=now.year, choices=range(2015, now.year + 1), type=int
     )
+    parser.add_argument(
+        "-u",
+        "--url",
+        default="",
+        type=str,
+        dest="url",
+        help="Choose day/year by url, e.g. https://adventofcode.com/2020/day/1",
+    )
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
         "-t", help="Today", action="store_true", default=False, dest="today"
@@ -67,6 +76,16 @@ def main():
     if args.wait:
         args.d = now.day + 1
         args.y = now.year
+
+    if args.url:
+        m = re.match(
+            r"https?://adventofcode.com/(?P<year>\d{4})/day/(?P<day>\d{1,2})", args.url
+        )
+        if not m:
+            print(f"{Fore.RED}Invalid url")
+            sys.exit(1)
+        args.d = int(m.group("day"))
+        args.y = int(m.group("year"))
 
     # Find how long until
     release = now.replace(
