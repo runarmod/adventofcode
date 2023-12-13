@@ -19,14 +19,11 @@ class Solution:
         return self.find_vertical_reflection(np.array(_map).transpose().tolist())
 
     def find_vertical_reflection(self, _map):
-        out = []
-        for y in range(len(_map) - 1):
-            for left, right in zip(_map[y::-1], _map[y + 1 :]):
-                if left != right:
-                    break
-            else:
-                out.append(y + 1)
-        return out
+        return [
+            y + 1
+            for y in range(len(_map) - 1)
+            if all(left == right for left, right in zip(_map[y::-1], _map[y + 1 :]))
+        ]
 
     def part1(self):
         s = 0
@@ -78,10 +75,8 @@ def main():
     print(f"(TEST) Part 2: {test2}, \t{'correct :)' if test2 == 400 else 'wrong :('}")
 
     solution = Solution()
-    part1 = solution.part1()
-    part2 = solution.part2()
-    print(part1_text := f"Part 1: {part1}")
-    print(part2_text := f"Part 2: {part2}")
+    print(f"Part 1: {solution.part1()}")
+    print(f"Part 2: {solution.part2()}")
 
     print(f"\nTotal time: {time.perf_counter() - start : .4f} sec")
 
