@@ -1,14 +1,4 @@
-import itertools
-import os
 import re
-import string
-import sys
-from collections import defaultdict, deque
-from pprint import pprint
-
-sys.path.insert(0, "../../")
-from utils.util import copy_answer, request_submit, write_solution
-
 
 def parseLine(line):
     line = line.split(",")
@@ -17,7 +7,6 @@ def parseLine(line):
 
 def parseFold(line):
     line = re.split(r"[ =]", line)
-    # print(line)
     return (line[-2], int(line[-1]))
 
 

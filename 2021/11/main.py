@@ -1,13 +1,5 @@
 import itertools
-import os
-import re
-import string
-import sys
-from collections import defaultdict, deque
-from pprint import pprint
-
-sys.path.insert(0, "../../")
-from utils.util import copy_answer, request_submit, write_solution
+from collections import deque
 
 
 class Solution:
@@ -47,8 +39,6 @@ class Solution:
     def flash(self):
         while self.queue:
             x, y = self.queue.popleft()
-            # self.flashes += 1
-            # self.data[y][x] += 1
             for adj in self.get_adjacent(x, y):
                 self.data[adj[1]][adj[0]] += 1
                 if self.data[adj[1]][adj[0]] == 10:
@@ -66,16 +56,10 @@ class Solution:
         return size == counter
 
     def part1(self):
-        for i in range(100):
+        for _ in range(100):
             self.increase_all()
             self.flash()
             self.reset()
-            # DEBUG
-            # if i < 10 or i % 10 == 9:
-            #     print("Iteration", i + 1, "flashes:", self.flashes, "total")
-            #     print("\n".join("".join(map(str, s)) for s in self.data))
-            #     print()
-
         return self.flashes
 
     def part2(self):
@@ -96,13 +80,8 @@ def main():
     solution = Solution()
     part1 = solution.part1()
     part2 = solution.part2()
-    print(part1_text := f"Part 1: {part1}")
-    print(part2_text := f"Part 2: {part2}")
-
-    copy_answer(part1, part2)
-    write_solution(os.path.dirname(os.path.realpath(__file__)), part1_text, part2_text)
-    request_submit(2021, 11, part1, part2)
-
+    print(f"Part 1: {part1}")
+    print(f"Part 2: {part2}")
 
 if __name__ == "__main__":
     main()
