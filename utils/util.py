@@ -21,7 +21,10 @@ if COOKIE is None:
 
 
 def request_submit(
-    year: Union[int, str], day: Union[int, str], part1: Optional[str], part2: Optional[str]
+    year: Union[int, str],
+    day: Union[int, str],
+    part1: Optional[str],
+    part2: Optional[str],
 ) -> None:
     """
     Request to submit the answer to the Advent of Code website.
@@ -33,14 +36,17 @@ def request_submit(
     if part2:
         submit(2, part2, URL)
     elif part1:
-        submit(1, part1, URL)
+        correct_part1 = submit(1, part1, URL)
+        if correct_part1 and str(day) == "25":
+            submit(2, "0", URL)
     else:
         print(f"{Fore.YELLOW}No answer generated.")
 
 
-def submit(part: int, answer: str, url: str) -> None:
+def submit(part: int, answer: str, url: str) -> bool:
     """
     Submit the answer to the Advent of Code website, and print the response.
+    Return True if the answer was correct, False otherwise.
     """
     question = f"Answer for part {part} ({answer}) generated. Send? (y/[n]) "
     if input(question).lower() not in ("y", "ye", "yes"):
@@ -57,11 +63,14 @@ def submit(part: int, answer: str, url: str) -> None:
     soup = BeautifulSoup(response.content, "html.parser")
     childsoup = soup.find("article")
     readable_response = markdownify(str(childsoup), heading_style="ATX").strip()
+
     if "That's the right answer!" in readable_response:
         print(f"{Fore.GREEN}Correct!")
         update_stats()
-    else:
-        print(f"{Fore.RED}{readable_response}")
+        return True
+
+    print(f"{Fore.RED}{readable_response}")
+    return False
 
 
 def write_solution(path: str, part1_text: str, part2_text: str) -> None:
