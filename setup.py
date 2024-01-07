@@ -148,7 +148,7 @@ def main():
         print(f"{Fore.GREEN}Opening VS Code!")
         os.system(f"code {path}")
 
-    USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; U; ru; rv:5.0.1.6) Gecko/20110501 Firefox/5.0.1 Firefox/5.0.1"
+    USER_AGENT = "github.com/runarmod/adventofcode by runarmod@gmail.com"
 
     # Make inputfile
     if not os.path.exists(inputPath := os.path.join(path, "input.txt")) or args.f:

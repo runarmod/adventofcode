@@ -78,7 +78,7 @@ def update_stats() -> None:
     URL = "https://adventofcode.com/events"
     cookies = {"session": COOKIE}
     USER_AGENT = (
-        "Mozilla/5.0 (Windows NT 6.1; U; ru; rv:5.0.1.6) Gecko/20110501 Firefox/5.0.1 Firefox/5.0.1"
+        "github.com/runarmod/adventofcode by runarmod@gmail.com"
     )
     headers = {"User-Agent": USER_AGENT}
     page = requests.get(URL, cookies=cookies, headers=headers)
