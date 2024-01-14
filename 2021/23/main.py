@@ -1,37 +1,37 @@
-from copy import deepcopy
+from frozendict import frozendict
 import heapq
-import itertools
-import os
-import sys
 import time
-
-sys.path.insert(0, "../../")
-from utils import copy_answer, request_submit, write_solution
 
 
 class QueueElement:
     def __init__(self, positions: dict[tuple[int, int], str], energy_used: int):
         self.positions = positions
         self.energy_used = energy_used
-        # self.remaining = self.remaining_energy()
+        self.remaining = self.remaining_energy()
 
     def get_data(self):
         return self.positions, self.energy_used
 
-    # def remaining_energy(self):
-    #     home_x = {"A": 3, "B": 5, "C": 7, "D": 9}
-    #     multiplier = {letter: 10**i for i, letter in enumerate("ABCD")}
-    #     s = 0
-    #     for (x, y), letter in self.positions.items():
-    #         if x == home_x[letter]:
-    #             continue
-    #         length = abs(x - home_x[letter]) + (y - 1) + 2  # width, up, down
-    #         s += length * multiplier[letter]
-    #     return s
+    def remaining_energy(self):
+        home_x = {"A": 3, "B": 5, "C": 7, "D": 9}
+        multiplier = {letter: 10**i for i, letter in enumerate("ABCD")}
+        s = 0
+        for (x, y), letter in self.positions.items():
+            if x == home_x[letter]:
+                continue
+            length = abs(x - home_x[letter]) + (y - 1)  # width, up
+            s += length * multiplier[letter]
+        return s
 
     def __lt__(self, other):
-        # return self.energy_used + self.remaining < other.energy_used + other.remaining
-        return self.energy_used < other.energy_used
+        return self.energy_used + self.remaining < other.energy_used + other.remaining
+
+
+def copy_dict(d: dict[tuple[int, int], str]):
+    new_d = dict()
+    for key, value in d.items():
+        new_d[key] = value
+    return new_d
 
 
 class Solution:
@@ -41,6 +41,7 @@ class Solution:
         self.lines = open(filename).read().rstrip().split("\n")
         self.clear, self.positions, self.max_y = self.parse_lines()
         self.coloums = range(3, 10, 2)
+        self.home_x = {"A": 3, "B": 5, "C": 7, "D": 9}
 
     def parse_lines(self):
         clear: set[tuple[int, int]] = set()
@@ -76,12 +77,7 @@ class Solution:
         return True
 
     def home_coords(self, positions: dict[tuple[int, int], str], letter: str):
-        x = next(
-            itertools.islice(
-                self.coloums, "ABCD".index(letter), "ABCD".index(letter) + 1
-            )
-        )
-
+        x = self.home_x[letter]
         y = self.max_y
         if (x, y) not in positions:
             return x, y
@@ -100,7 +96,6 @@ class Solution:
     ):
         start_x, start_y = start
         end_x, end_y = end
-
         if start_y < end_y:
             dx = -1 if start_x > end_x else 1
             # When we are above where we are going, we move to the side first
@@ -115,7 +110,7 @@ class Solution:
             dx = -1 if start_x > end_x else 1
             # When we are below where we are going, we move up first
             for y in range(start_y - 1, end_y - 1, -1):
-                if (end_x, y) in positions:
+                if (start_x, y) in positions:
                     return False
             for x in range(start_x + dx, end_x + dx, dx):
                 if (x, end_y) in positions:
@@ -140,17 +135,15 @@ class Solution:
         return home_coords[0], home_coords[1], energy
 
     def calculate_energy(self, x1: int, y1: int, x2: int, y2: int, letter: str):
-        multiplier: int = 10 ** "ABCD".index(letter)  # A = 1, B = 10, C = 100, D = 1000
-        return (abs(x1 - x2) + abs(y1 - y2)) * multiplier
+        multiplier: dict[str, int] = {
+            letter: 10**i for i, letter in enumerate("ABCD")
+        }
+        return (abs(x1 - x2) + abs(y1 - y2)) * multiplier[letter]
 
     def locked_home(
         self, letter: str, x: int, y: int, positions: dict[tuple[int, int], str]
     ):
-        home_x = next(
-            itertools.islice(
-                self.coloums, "ABCD".index(letter), "ABCD".index(letter) + 1
-            )
-        )
+        home_x = self.home_x[letter]
 
         if x != home_x:
             return False
@@ -164,16 +157,15 @@ class Solution:
         return True
 
     def run(self):
-        q = [QueueElement(deepcopy(self.positions), 0)]  # positions, steps_taken
+        q = [QueueElement(copy_dict(self.positions), 0)]  # positions, steps_taken
         seen = set()
 
         while q:
             positions, energy_used = heapq.heappop(q).get_data()
             if self.all_done(positions):
-                self.print_map(positions)
                 return energy_used
 
-            state = tuple(sorted(positions.items()))
+            state = frozendict(positions)
             if state in seen:
                 continue
             seen.add(state)
@@ -187,39 +179,40 @@ class Solution:
                         positions, (x, y)
                     )
 
-                    if energy is not None:
-                        new_positions = deepcopy(positions)
-                        del new_positions[(x, y)]
-                        new_positions[(available_spot_x, available_spot_y)] = letter
-                        heapq.heappush(
-                            q, QueueElement(new_positions, energy_used + energy)
-                        )
-                else:
-                    possible_xs = set(range(1, 12)).difference(self.coloums)
-                    new_y = 1
-                    for new_x in possible_xs:
-                        if (new_x, new_y) not in positions:
-                            if self.route_safe(positions, (x, y), (new_x, new_y)):
-                                energy = self.calculate_energy(
-                                    x, y, new_x, new_y, letter
-                                )
-                                new_positions = deepcopy(positions)
-                                del new_positions[(x, y)]
-                                new_positions[(new_x, new_y)] = letter
-                                heapq.heappush(
-                                    q, QueueElement(new_positions, energy_used + energy)
-                                )
+                    if energy is None:
+                        continue
+
+                    new_positions = copy_dict(positions)
+                    del new_positions[(x, y)]
+                    new_positions[(available_spot_x, available_spot_y)] = letter
+                    heapq.heappush(
+                        q,
+                        QueueElement(new_positions, energy_used + energy),
+                    )
+                    continue
+
+                # y > 1
+                possible_xs = set(range(1, 12)).difference(self.coloums)
+                new_y = 1
+                for new_x in possible_xs:
+                    if (new_x, new_y) in positions:
+                        continue
+                    if not self.route_safe(positions, (x, y), (new_x, new_y)):
+                        continue
+                    energy = self.calculate_energy(x, y, new_x, new_y, letter)
+                    new_positions = copy_dict(positions)
+                    del new_positions[(x, y)]
+                    new_positions[(new_x, new_y)] = letter
+                    heapq.heappush(
+                        q,
+                        QueueElement(new_positions, energy_used + energy),
+                    )
         return None
 
     def part1(self):
         return self.run()
 
     def part2(self):
-        return None
-        """
-        #D#C#B#A#
-        #D#B#A#C#
-        """
         new_lines = ["  #D#C#B#A#", "  #D#B#A#C#"]
         self.lines = self.lines[:3] + new_lines + self.lines[3:]
         self.clear, self.positions, self.max_y = self.parse_lines()
@@ -231,24 +224,15 @@ def main():
 
     test = Solution(test=True)
     test1 = test.part1()
-    print(f"(TEST) Part 1: {test1}, \t{'correct :)' if test1 == 12521 else 'wrong :('}")
     test2 = test.part2()
+    print(f"(TEST) Part 1: {test1}, \t{'correct :)' if test1 == 12521 else 'wrong :('}")
     print(f"(TEST) Part 2: {test2}, \t{'correct :)' if test2 == 44169 else 'wrong :('}")
 
     solution = Solution()
-    part1 = solution.part1()
-    print(part1_text := f"Part 1: {part1}")
-    part2 = solution.part2()
-    print(part2_text := f"Part 2: {part2}")
+    print(f"Part 1: {solution.part1()}")
+    print(f"Part 2: {solution.part2()}")
 
     print(f"\nTotal time: {time.perf_counter() - start : .4f} sec")
-    # if part2 >= 59542:
-    #     print("Too high")
-    #     quit()
-
-    copy_answer(part1, part2)
-    write_solution(os.path.dirname(os.path.realpath(__file__)), part1_text, part2_text)
-    request_submit(2021, 23, part1, part2)
 
 
 if __name__ == "__main__":
