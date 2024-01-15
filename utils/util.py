@@ -34,39 +34,44 @@ def request_submit(
     URL = f"https://adventofcode.com/{year}/day/{day}/answer"
 
     if part2:
-        submit(2, part2, URL)
+        submit(day, 2, part2, URL)
     elif part1:
-        correct_part1 = submit(1, part1, URL)
+        correct_part1 = submit(day, 1, part1, URL)
         if correct_part1 and str(day) == "25":
-            submit(2, "0", URL)
+            submit(day, 2, "0", URL)
     else:
         print(f"{Fore.YELLOW}No answer generated.")
 
 
-def submit(part: int, answer: str, url: str) -> bool:
+def submit(day: int, part: int, answer: str, url: str) -> bool:
     """
     Submit the answer to the Advent of Code website, and print the response.
     Return True if the answer was correct, False otherwise.
     """
     question = f"Answer for part {part} ({answer}) generated. Send? (y/[n]) "
-    if input(question).lower() not in ("y", "ye", "yes"):
-        print(f"{Fore.YELLOW}Did not submit.")
-        return
+    if day != 25 or part == 1:
+        if input(question).lower() not in ("y", "ye", "yes"):
+            print(f"{Fore.YELLOW}Did not submit.")
+            return
 
     data = {"level": str(part), "answer": answer}
     response = requests.post(url, data=data, cookies={"session": COOKIE})
 
     if response.status_code != 200:
         print(f"{Fore.RED}Error: {response.status_code}\n{response.content}")
-        return
+        return False
 
     soup = BeautifulSoup(response.content, "html.parser")
     childsoup = soup.find("article")
     readable_response = markdownify(str(childsoup), heading_style="ATX").strip()
 
-    if "That's the right answer!" in readable_response:
+    if (
+        "That's the right answer!" in readable_response
+        or "Congratulations!" in readable_response
+    ):
         print(f"{Fore.GREEN}Correct!")
-        update_stats()
+        if not (day == 25 and part == 1):
+            update_stats()
         return True
 
     print(f"{Fore.RED}{readable_response}")
