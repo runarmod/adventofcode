@@ -1,6 +1,5 @@
 import os
 import sys
-from typing import Optional, Union
 
 import pyperclip
 import requests
@@ -21,10 +20,10 @@ if COOKIE is None:
 
 
 def request_submit(
-    year: Union[int, str],
-    day: Union[int, str],
-    part1: Optional[str],
-    part2: Optional[str],
+    year: int | str,
+    day: int | str,
+    part1: str | None,
+    part2: str | None,
 ) -> None:
     """
     Request to submit the answer to the Advent of Code website.
@@ -33,11 +32,12 @@ def request_submit(
 
     URL = f"https://adventofcode.com/{year}/day/{day}/answer"
 
+    day = int(day)
     if part2:
         submit(day, 2, part2, URL)
     elif part1:
         correct_part1 = submit(day, 1, part1, URL)
-        if correct_part1 and str(day) == "25":
+        if correct_part1 and day == 25:
             submit(day, 2, "0", URL)
     else:
         print(f"{Fore.YELLOW}No answer generated.")
@@ -86,7 +86,7 @@ def write_solution(path: str, part1_text: str, part2_text: str) -> None:
         f.write(f"{part1_text}\n{part2_text}\n")
 
 
-def copy_answer(part1: Optional[str | int], part2: Optional[str | int]):
+def copy_answer(part1: str | int | None, part2: str | int | None):
     """
     Copy the most relevant answer (part 1 or 2) to the clipboard, or neither.
     """
