@@ -1,6 +1,5 @@
 import itertools
 import time
-from pprint import pprint
 
 from IntcodeComputer import IntcodeComputer
 
@@ -82,6 +81,28 @@ class Solution:
             if next == "v":
                 return "L"
 
+    def get_substring(self, path, start_search, max_length=20):
+        for start in range(start_search, len(path)):
+            if path[start] == ",":
+                continue
+            for end in range(start, min(start + max_length, len(path))):
+                if path[end - 1] == ",":
+                    continue
+                yield start, end
+
+    def compress(self, path):
+        for a_s, a_e in self.get_substring(path, 0):
+            for b_s, b_e in self.get_substring(path, a_e):
+                for c_s, c_e in self.get_substring(path, b_e):
+                    A, B, C = (
+                        path[a_s:a_e],
+                        path[b_s:b_e],
+                        path[c_s:c_e],
+                    )
+                    s = path.replace(A, "A").replace(B, "B").replace(C, "C")
+                    if len(s) <= 20:
+                        return s, A, B, C
+
     def part2(self):
         start = None
         direction = None
@@ -110,27 +131,14 @@ class Solution:
                 y += dy
             path.append(str(c))
 
-        s = ",".join(path)
-        # Found these manually :((
-        A = "L,12,L,8,L,8"
-        B = "R,4,L,12,L,12,R,6"
-        C = "L,12,R,4,L,12,R,6"
-        s = s.replace(A, "A")
-        s = s.replace(B, "B")
-        s = s.replace(C, "C")
+        s, A, B, C = self.compress(",".join(path))
 
-        # print(f"{A=}")
-        # print(f"{B=}")
-        # print(f"{C=}")
         computer = IntcodeComputer(self.data)
         computer.replace(0, 2)
-        computer.inputs.extend(map(ord, s + "\n"))
-        computer.inputs.extend(map(ord, A + "\n"))
-        computer.inputs.extend(map(ord, B + "\n"))
-        computer.inputs.extend(map(ord, C + "\n"))
-        computer.inputs.extend(map(ord, "n\n"))
+        for x in (s, A, B, C, "n"):
+            computer.inputs.extend(map(ord, x + "\n"))
 
-        while not computer.halted:
+        while True:
             v = computer.run()
             if v is None:
                 break
