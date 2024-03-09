@@ -81,11 +81,11 @@ class Solution:
             if next == "v":
                 return "L"
 
-    def get_substring(self, path, start_search, max_length=20):
+    def get_substring(self, path, start_search, max_length=20, min_length=6):
         for start in range(start_search, len(path)):
             if path[start] == ",":
                 continue
-            for end in range(start, min(start + max_length, len(path))):
+            for end in range(start + min_length, min(start + max_length, len(path))):
                 if path[end - 1] == ",":
                     continue
                 yield start, end
@@ -138,10 +138,7 @@ class Solution:
         for x in (s, A, B, C, "n"):
             computer.inputs.extend(map(ord, x + "\n"))
 
-        while True:
-            v = computer.run()
-            if v is None:
-                break
+        for v in computer.iter():
             if v > 255:
                 return v
             # print(chr(v), end="")
