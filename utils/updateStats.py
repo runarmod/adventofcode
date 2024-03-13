@@ -62,7 +62,10 @@ def get_stats_from_HTML(page: requests.Response) -> str:
     stats = ""
     for element in childsoup:
         year = element.find("a").text
-        stars = element.find("span").text
+        stars = " 0*"
+        span = element.find("span")
+        if span is not None:
+            stars = span.text
         stats += f"{year} {stars}\n"
     stats = stats.strip()
 
