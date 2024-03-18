@@ -8,17 +8,22 @@ class Solution:
     def __init__(self):
         self.data = [int(line) for line in open("input.txt").read().rstrip().split(",")]
 
+    def check(self, x, y):
+        self.computer = IntcodeComputer(self.data)
+        self.computer.input(x)
+        self.computer.input(y)
+        return self.computer.run() == 1
+
     def part1(self):
-        s = 0
-        for x, y in itertools.product(range(50), repeat=2):
-            self.computer = IntcodeComputer(self.data)
-            self.computer.input(x)
-            self.computer.input(y)
-            s += self.computer.run()
-        return s
+        return sum(self.check(x, y) for x, y in itertools.product(range(50), repeat=2))
 
     def part2(self):
-        return None
+        x = 0
+        for y in itertools.count(99):
+            while not self.check(x, y):
+                x += 1
+            if self.check(x + 99, y - 99):
+                return x * 10000 + y - 99
 
 
 def main():
