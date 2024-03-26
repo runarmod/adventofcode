@@ -1,10 +1,8 @@
-from collections import defaultdict
-from pprint import pprint
-import itertools
-import pyperclip
 import re
-import string
-import matplotlib.pyplot as plt
+import time
+
+from shapely.geometry import Point, Polygon
+from shapely.ops import unary_union
 
 
 def dist(x_1, y_1, x_2, y_2) -> int:
@@ -43,30 +41,28 @@ class Solution:
         return len(can_not_be)
 
     def part2(self):
-        for (x, y), d in self.data.items():
-            x_s = [x, x + d, x, x - d, x]
-            y_s = [y - d, y, y + d, y, y - d]
-            plt.fill(x_s, y_s)
-        plt.plot(
-            [0, (20 if self.test else 4000000), (20 if self.test else 4000000), 0, 0],
-            [0, 0, (20 if self.test else 4000000), (20 if self.test else 4000000), 0],
-        )
-        plt.xlim(left=3403959, right=3403961)
-        plt.ylim(top=3289728, bottom=3289730)
-        plt.show()
-
-        return 3403960 * 4000000 + 3289729
+        polygons = [
+            Polygon([(x, y - d), (x + d, y), (x, y + d), (x - d, y), (x, y - d)])
+            for (x, y), d in self.data.items()
+        ]
+        mergedPolys: Polygon = unary_union(polygons)
+        hole: Polygon = list(mergedPolys.interiors)[0]
+        center: Point = hole.centroid
+        return round(center.x) * 4000000 + round(center.y)
 
 
 def main():
-    solution = Solution()
-    part1 = solution.part1()
-    part2 = solution.part2()
-    print(part1_text := f"Part 1: {part1}")
-    print(part2_text := f"Part 2: {part2}")
+    start = time.perf_counter()
 
-    with open("solution.txt", "w") as f:
-        f.write(f"{part1_text}\n{part2_text}\n")
+    test = Solution(test=True)
+    print(f"(TEST) Part 1: {test.part1()}")
+    print(f"(TEST) Part 2: {test.part2()}")
+
+    solution = Solution()
+    print(f"Part 1: {solution.part1()}")
+    print(f"Part 2: {solution.part2()}")
+
+    print(f"\nTotal time: {time.perf_counter() - start : .4f} sec")
 
 
 if __name__ == "__main__":
