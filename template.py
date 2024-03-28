@@ -1,4 +1,5 @@
 import functools
+import heapq
 import itertools
 import os
 import re
@@ -7,6 +8,8 @@ import sys
 import time
 from collections import defaultdict, deque
 from pprint import pprint
+
+import networkx as nx
 
 sys.path.insert(0, "../../")
 from utils import copy_answer, request_submit, write_solution
