@@ -1,6 +1,10 @@
-# This program is will create the needed files for
-# a problem and get the input it may also open the
-# problem in the browser and start a vs code session
+"""
+This program will create the needed files for a day of
+advent of code. It will also download the input, along
+with opening the problem in the browser and starting a
+vs code session. Read more in the README.md file.
+"""
+
 import argparse
 import contextlib
 import os
@@ -117,7 +121,7 @@ def main():
         os.mkdir(path)
 
     if not args.i:
-        # Crate testinput file
+        # Create testinput file
         if (
             not os.path.exists(testPath := os.path.join(path, "testinput.txt"))
             or args.f
@@ -133,13 +137,6 @@ def main():
                         .replace('"CHANGE_YEAR"', str(args.y))
                         .replace('"CHANGE_DATE"', str(args.d))
                     )
-
-        # Create URL file
-        if not os.path.exists(urlPath := os.path.join(path, "problem.url")) or args.f:
-            with open(urlPath, "w") as f:
-                f.write(
-                    f"[InternetShortcut]\nURL=https://adventofcode.com/{args.y}/day/{args.d}\n"
-                )
 
     URL = f"https://adventofcode.com/{args.y}/day/{args.d}"
 
