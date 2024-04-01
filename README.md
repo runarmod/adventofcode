@@ -2,9 +2,9 @@
 
 [![wakatime](https://wakatime.com/badge/user/4196dd87-492b-41f6-b435-4745a3d9200d/project/e525481b-ae87-4c3d-8306-fdc04898c825.svg)](https://wakatime.com/badge/user/4196dd87-492b-41f6-b435-4745a3d9200d/project/e525481b-ae87-4c3d-8306-fdc04898c825)
 
-This repository contains of all of my code from [advent of code](https://adventofcode.com/). I currently have one more year until I have completed all of the years.
+This repository contains of all of my code from [advent of code](https://adventofcode.com/).
 
-This repository contains a setup file, which will initiate a work-directory with a template, in addition to downloading the input using a cookie found in [.env](https://github.com/runarmod/adventofcode/blob/main/.env.example).
+There is a setup file, which will initiate a work-directory with a template, in addition to downloading the input using a cookie found in [.env](https://github.com/runarmod/adventofcode/blob/main/.env.example). There are also extra utility files/functions in the [utils/](./utils/) folder, which can be used to download all inputs, update the stars in the README, and sending answers to the aoc website.
 
 ## My statistics
 
