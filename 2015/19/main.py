@@ -1,35 +1,23 @@
+import re
 from collections import defaultdict
 from random import shuffle
-import re
-import timeit
 
 
 class Solution:
     def __init__(self, test=False):
         self.test = test
         filename = "testinput.txt" if self.test else "input.txt"
-        pattern_rules = re.compile(r"(\w+) => (\w+)")
         self.rules = defaultdict(list)
-        self.mol = "CRnCaCaCaSiRnBPTiMgArSiRnSiRnMgArSiRnCaFArTiTiBSiThFYCaFArCaCaSiThCaPBSiThSiThCaCaPTiRnPBSiThRnFArArCaCaSiThCaSiThSiRnMgArCaPTiBPRnFArSiThCaSiRnFArBCaSiRnCaPRnFArPMgYCaFArCaPTiTiTiBPBSiThCaPTiBPBSiRnFArBPBSiRnCaFArBPRnSiRnFArRnSiRnBFArCaFArCaCaCaSiThSiThCaCaPBPTiTiRnFArCaPTiBSiAlArPBCaCaCaCaCaSiRnMgArCaSiThFArThCaSiThCaSiRnCaFYCaSiRnFYFArFArCaSiRnFYFArCaSiRnBPMgArSiThPRnFArCaSiRnFArTiRnSiRnFYFArCaSiRnBFArCaSiRnTiMgArSiThCaSiThCaFArPRnFArSiRnFArTiTiTiTiBCaCaSiRnCaCaFYFArSiThCaPTiBPTiBCaSiThSiRnMgArCaF"
         with open(filename) as f:
             s = f.read().rstrip()
-            for match in pattern_rules.findall(s):
-                self.rules[match[0]].append(match[1])
-            self.list = s.split("\n")[-1]
+            for atom, molecule in re.findall(r"(\w+) => (\w+)", s):
+                self.rules[atom].append(molecule)
+            self.mol = s.split("\n\n")[-1]
 
-        self.list = self.split_upper()
+        self.list = self.split_upper(self.mol)
 
-    def split_upper(self):
-        tmp = 0
-        l = []
-        first = True
-        for i in range(len(self.list)):
-            if self.list[i].isupper() and not first:
-                l.append(self.list[tmp:i])
-                tmp = i
-            first = False
-        l.append(self.list[tmp:])
-        return l
+    def split_upper(self, mol):
+        return list(re.findall(r"[A-Z][a-z]*", mol))
 
     def part1(self):
         unique = set()
@@ -40,62 +28,22 @@ class Solution:
 
     def part2(self):
         rules = [
-            ("Al", "ThF"),
-            ("Al", "ThRnFAr"),
-            ("B", "BCa"),
-            ("B", "TiB"),
-            ("B", "TiRnFAr"),
-            ("Ca", "CaCa"),
-            ("Ca", "PB"),
-            ("Ca", "PRnFAr"),
-            ("Ca", "SiRnFYFAr"),
-            ("Ca", "SiRnMgAr"),
-            ("Ca", "SiTh"),
-            ("F", "CaF"),
-            ("F", "PMg"),
-            ("F", "SiAl"),
-            ("H", "CRnAlAr"),
-            ("H", "CRnFYFYFAr"),
-            ("H", "CRnFYMgAr"),
-            ("H", "CRnMgYFAr"),
-            ("H", "HCa"),
-            ("H", "NRnFYFAr"),
-            ("H", "NRnMgAr"),
-            ("H", "NTh"),
-            ("H", "OB"),
-            ("H", "ORnFAr"),
-            ("Mg", "BF"),
-            ("Mg", "TiMg"),
-            ("N", "CRnFAr"),
-            ("N", "HSi"),
-            ("O", "CRnFYFAr"),
-            ("O", "CRnMgAr"),
-            ("O", "HP"),
-            ("O", "NRnFAr"),
-            ("O", "OTi"),
-            ("P", "CaP"),
-            ("P", "PTi"),
-            ("P", "SiRnFAr"),
-            ("Si", "CaSi"),
-            ("Th", "ThCa"),
-            ("Ti", "BP"),
-            ("Ti", "TiTi"),
-            ("e", "HF"),
-            ("e", "NAl"),
-            ("e", "OMg"),
+            (atom, molecule)
+            for atom, molecules in self.rules.items()
+            for molecule in molecules
         ]
-
         target = self.mol
         res = 0
 
         while target != "e":
             tmp = target
 
-            for a, b in rules:
-                res += target.count(b)
-                target = target.replace(b, a)
+            for atom, molecule in rules:
+                res += target.count(molecule)
+                target = target.replace(molecule, atom)
 
             if tmp == target:
+                # No change
                 target = self.mol
                 res = 0
                 shuffle(rules)
@@ -103,13 +51,13 @@ class Solution:
 
 
 def main():
-    solution = Solution()
-    print(part1 := f"Part 1: {solution.part1()}")
-    print(part2 := f"Part 2: {solution.part2()}")
+    test = Solution(test=True)
+    print(f"(TEST) Part 1: {test.part1()}")
+    print(f"(TEST) Part 2: {test.part2()}")
 
-    if not solution.test:
-        with open("solution.txt", "w") as f:
-            f.write(f"{part1}\n{part2}\n")
+    solution = Solution()
+    print(f"Part 1: {solution.part1()}")
+    print(f"Part 2: {solution.part2()}")
 
 
 if __name__ == "__main__":
