@@ -18,6 +18,7 @@ It will only download inputs for days that are not already downloaded and
 which have a folder ready.
 """
 
+import argparse
 import datetime
 import os
 import sys
@@ -101,15 +102,15 @@ class Logging:
 
 
 def get_years_and_days_to_download(
-    logger: "Logging",
+    logger: Logging,
 ) -> Generator[tuple[int, int], None, None]:
     """Yields all years and days that should be downloaded."""
-    years = trange(2015, datetime.datetime.now().year + 1)
-    days = trange(1, 26, leave=False)
+    years = range(2015, datetime.datetime.now().year + 1)
+    days = range(1, 26)
 
-    if logger.verbose:
-        years = range(2015, datetime.datetime.now().year + 1)
-        days = range(1, 26)
+    if not logger.verbose:
+        years = trange(2015, datetime.datetime.now().year + 1)
+        days = trange(1, 26, leave=False)
 
     for year in years:
         logger.set_year(year)
@@ -135,7 +136,7 @@ def get_years_and_days_to_download(
             yield year, day
 
 
-def download_input(year: int, day: int, logger: "Logging") -> None:
+def download_input(year: int, day: int, logger: Logging, sleep_duration: float) -> None:
     """Downloads the input for the given year and day."""
     URL = f"https://adventofcode.com/{year}/day/{day}/input"
     cookies = {"session": COOKIE}
@@ -157,18 +158,40 @@ def download_input(year: int, day: int, logger: "Logging") -> None:
         f.write(page.text)
 
     logger.downloaded()
-    time.sleep(1)
+    time.sleep(sleep_duration)
 
 
-def download_inputs(logger: "Logging") -> None:
+def download_inputs(logger: Logging, sleep_duration: float) -> None:
     for year, day in get_years_and_days_to_download(logger):
         logger.start_download(year, day)
-        download_input(year, day, logger)
+        download_input(year, day, logger, sleep_duration)
     logger.summarize()
 
 
 def main() -> None:
-    if "--verbose" in sys.argv:
+    parser = argparse.ArgumentParser(
+        description="Download all inputs for all saved days and years.",
+        epilog="Example: `python3 ./utils/inputDownloader.py -v`",
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        help="verbose information about status",
+        dest="verbose",
+        action="store_true",
+        default=False,
+    )
+    parser.add_argument(
+        "-s",
+        "--speed",
+        help="adjust the sleep speed between downloads",
+        dest="seconds",
+        type=float,
+        default=1,
+    )
+    args = parser.parse_args()
+
+    if args.verbose:
         logger = Logging(True)
     else:
         print(
@@ -176,7 +199,7 @@ def main() -> None:
         )
         logger = Logging(False)
 
-    download_inputs(logger)
+    download_inputs(logger, args.seconds)
 
 
 if __name__ == "__main__":
