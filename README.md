@@ -37,7 +37,7 @@ cp .env.example .env
 
 ## Usage
 
-Delete directories 2015-2022 if you want to start from scratch.
+Delete directories 2015-2023 if you want to start from scratch.
 
 Create a work-directory for december 1st 2015, download the input file, and open the directory in vs-code.
 
