@@ -19,12 +19,8 @@ class Solution:
 
 def main():
     solution = Solution()
-    print(part1 := f"Part 1: {solution.part1()}")
-    print(part2 := f"Part 2: {solution.part2()}")
-
-    if not solution.test:
-        with open("solution.txt", "w") as f:
-            f.write(f"{part1}\n{part2}\n")
+    print(f"Part 1: {solution.part1()}")
+    print(f"Part 2: {solution.part2()}")
 
 
 if __name__ == "__main__":

@@ -92,12 +92,8 @@ def main():
     print(part2_test := f"(TEST) Part 2: {test.part2()}")
     # return
     solution = Solution()
-    print(part1 := f"Part 1: {solution.part1()}")
-    print(part2 := f"Part 2: {solution.part2()}")
-
-    if not solution.test:
-        with open("solution.txt", "w") as f:
-            f.write(f"{part1}\n{part2}\n")
+    print(f"Part 1: {solution.part1()}")
+    print(f"Part 2: {solution.part2()}")
 
 
 if __name__ == "__main__":
