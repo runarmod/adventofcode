@@ -28,11 +28,20 @@ def request_submit(
     """
     Request to submit the answer to the Advent of Code website.
     This function will decide whether to submit part 1, part 2 or neither.
+    Year and day must be numbers.
     """
+
+    if isinstance(year, str) and year.isdigit():
+        year = int(year)
+
+    if isinstance(day, str) and day.isdigit():
+        day = int(day)
+
+    if not isinstance(year, int) or not isinstance(day, int):
+        raise TypeError("Year and day must be numbers.")
 
     URL = f"https://adventofcode.com/{year}/day/{day}/answer"
 
-    day = int(day)
     if part2:
         submit(day, 2, part2, URL)
     elif part1:
