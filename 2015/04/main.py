@@ -1,26 +1,62 @@
-import hashlib
 import itertools
+import multiprocessing
 import time
+from hashlib import md5
+
+from more_itertools import consume
 
 
 class Solution:
     def __init__(self, test=False):
         self.test = test
         filename = "testinput.txt" if self.test else "input.txt"
-        self.data = open(filename).read().rstrip()
+        self.prefix = open(filename).read().rstrip()
 
-    def find_hash(self, leading_zeros):
-        for i in itertools.count():
-            word = self.data + str(i)
-            hash = hashlib.md5(word.encode(), usedforsecurity=False).hexdigest()
-            if hash.startswith("0" * leading_zeros):
+    def correct_number(self, number, leading_zeros):
+        return (
+            md5((self.prefix + str(number)).encode(), usedforsecurity=False)
+            .hexdigest()
+            .startswith("0" * leading_zeros)
+        )
+
+    def find_hash(
+        self, leading_zeros, process_nr=1, threads=1, out=multiprocessing.Queue()
+    ):
+        for i in itertools.count(
+            start=process_nr,
+            step=threads,
+        ):
+            if self.correct_number(i, leading_zeros):
+                out.put(i)
                 return i
 
+    def find_hash_threaded(self, leading_zeros):
+        threads = multiprocessing.cpu_count() - 1
+        out = multiprocessing.Queue()
+
+        processes = [
+            multiprocessing.Process(
+                target=self.find_hash,
+                args=(leading_zeros, i, threads, out),
+            )
+            for i in range(threads)
+        ]
+
+        consume(map(lambda p: p.start(), processes))
+
+        result = out.get()
+
+        for process in processes:
+            process.terminate()
+        return result
+
     def part1(self):
-        return self.find_hash(5)
+        # return self.find_hash(5) # <-- With no multiprocessing
+        return self.find_hash_threaded(5)
 
     def part2(self):
-        return self.find_hash(6)
+        # return self.find_hash(6) # <-- With no multiprocessing
+        return self.find_hash_threaded(6)
 
 
 def main():
