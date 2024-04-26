@@ -3,13 +3,16 @@ import time
 from typing import Generator
 
 import networkx as nx
+import numpy as np
 
 
 class Solution:
     def __init__(self, test=False):
         self.test = test
         filename = "testinput.txt" if self.test else "input.txt"
-        self.data = open(filename).read().rstrip().split("\n")
+        self.data = np.array(
+            list(map(list, open(filename).read().rstrip().split("\n")))
+        )
 
     def initialize_graph(self):
         self.G = nx.Graph()
@@ -29,7 +32,7 @@ class Solution:
                     if (
                         0 <= n_x < len(line)
                         and 0 <= n_y < len(self.data)
-                        and self.data[n_y][n_x] != "#"
+                        and self.data[n_y, n_x] != "#"
                     ):
                         self.G.add_edge((x, y), (n_x, n_y), weight=1)
         self.compactify(self.G)
@@ -131,9 +134,9 @@ class Solution:
         ```
         """
         x, y = self.start
-        self.data[y - 1] = self.data[y - 1][: x - 1] + "@#@" + self.data[y - 1][x + 2 :]
-        self.data[y] = self.data[y][: x - 1] + "###" + self.data[y][x + 2 :]
-        self.data[y + 1] = self.data[y + 1][: x - 1] + "@#@" + self.data[y + 1][x + 2 :]
+        self.data[y - 1 : y + 2, x - 1 : x + 2] = np.array(
+            list(map(list, ["@#@", "###", "@#@"]))
+        )
 
     def keys_in_graph(self, G: nx.Graph) -> set[str]:
         """
