@@ -1,4 +1,6 @@
 import itertools
+from pprint import pprint
+import random
 import re
 import time
 
@@ -9,8 +11,11 @@ class Solution:
     def __init__(self):
         self.data = list(map(int, open("input.txt").read().rstrip().split(",")))
 
-    def optimize_path(self, path, opposite):
+    def optimize_path(self, path):
         # While there are two opposite directions next to each other, remove them
+        directions = ["north", "east", "south", "west"]
+        N, E, S, W = directions
+        opposite = {N: S, S: N, E: W, W: E}
         while True:
             for i in range(1, len(path) - 1):
                 if path[i - 1] in opposite and path[i] == opposite[path[i - 1]]:
@@ -27,8 +32,36 @@ class Solution:
             path.extend(opposite[direction] for direction in p[::-1])
         path.extend(pressure_plate)
 
-        path = self.optimize_path(path, opposite)
+        path = self.optimize_path(path)
         return path
+
+    def find_rooms(self):
+        rooms = dict()
+
+        path = []
+        available_directions = []
+
+        room_name_regex = re.compile(r"== (.+) ==")
+        directions_regex = re.compile(r"- (north|east|south|west)")
+        while True:
+            buffer = ""
+            computer = IntcodeComputer(self.data)
+            for c in computer.iter():
+                if c == ord("?"):
+                    room_name_match = room_name_regex.findall(buffer)
+                    if room_name_match:
+                        room_name = room_name_match[-1]
+                        if room_name not in rooms:
+                            rooms[room_name] = self.optimize_path(path.copy())
+                            print("Found new room: '" + room_name + "'")
+                    directions_match = directions_regex.findall(buffer)
+                    if directions_match:
+                        available_directions = directions_match
+                        random_dir = random.choice(available_directions)
+                        path.append(random_dir)
+                        computer.input_str(random_dir)
+                    buffer = ""
+                buffer += chr(c)
 
     def run(self, all_items, pressure_plate):
         directions = ["north", "east", "south", "west"]
@@ -91,7 +124,8 @@ def main():
     start = time.perf_counter()
 
     solution = Solution()
-    print(f"Part 1: {solution.part1()}")
+    print(solution.find_rooms())
+    # print(f"Part 1: {solution.part1()}")
 
     print(f"\nTotal time: {time.perf_counter() - start : .4f} sec")
 
