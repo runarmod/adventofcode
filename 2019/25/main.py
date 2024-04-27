@@ -12,7 +12,8 @@ from IntcodeComputer import IntcodeComputer
 class Solution:
     def __init__(self):
         self.data = list(map(int, open("input.txt").read().rstrip().split(",")))
-        self.rooms = dict()
+        self.rooms = {}
+        self.items = {}
         directions = ["north", "east", "south", "west"]
         N, E, S, W = directions
         self.opposite = {N: S, S: N, E: W, W: E}
@@ -56,6 +57,7 @@ class Solution:
             computer.input_str(direction)
 
         room_name_regex = re.compile(r"== (.+) ==")
+        items_regex = re.compile(r"Items here:\n(?:- (.+)\n)")
         # All directions where we do not autmatically get sent to another room
         directions_regex = re.compile(r"- (north|east|south|west)(?!.*==)", re.DOTALL)
 
@@ -70,6 +72,8 @@ class Solution:
                 continue
 
             self.rooms[room_name] = path
+            self.items[room_name] = items_regex.findall(buffer)
+
             print("Found new room: '" + room_name + "'")
             if room_name == "Pressure-Sensitive Floor":
                 return
@@ -80,9 +84,6 @@ class Solution:
             break
 
     def run(self, all_items, pressure_plate):
-        directions = ["north", "east", "south", "west"]
-        N, E, S, W = directions
-
         bad = {
             "escape pod",  # quits the game
             "infinite loop",  # infinite loop...
@@ -141,6 +142,7 @@ def main():
     solution = Solution()
     solution.find_rooms()
     pprint(solution.rooms)
+    pprint(solution.items)
     # print(f"Part 1: {solution.part1()}")
 
     print(f"\nTotal time: {time.perf_counter() - start : .4f} sec")
