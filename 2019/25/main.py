@@ -1,3 +1,5 @@
+from collections import deque
+from copy import deepcopy
 import itertools
 from pprint import pprint
 import random
@@ -10,63 +12,76 @@ from IntcodeComputer import IntcodeComputer
 class Solution:
     def __init__(self):
         self.data = list(map(int, open("input.txt").read().rstrip().split(",")))
+        self.rooms = dict()
+        directions = ["north", "east", "south", "west"]
+        N, E, S, W = directions
+        self.opposite = {N: S, S: N, E: W, W: E}
 
     def optimize_path(self, path):
         # While there are two opposite directions next to each other, remove them
-        directions = ["north", "east", "south", "west"]
-        N, E, S, W = directions
-        opposite = {N: S, S: N, E: W, W: E}
         while True:
             for i in range(1, len(path) - 1):
-                if path[i - 1] in opposite and path[i] == opposite[path[i - 1]]:
+                if (
+                    path[i - 1] in self.opposite
+                    and path[i] == self.opposite[path[i - 1]]
+                ):
                     path = path[: i - 1] + path[i + 1 :]
                     break
             else:
                 return path
 
-    def generate_path(self, items, opposite, pressure_plate):
+    def generate_path(self, items, pressure_plate):
         path = []
         for item, p in items:
             path.extend(p)
             path.append("take " + item)
-            path.extend(opposite[direction] for direction in p[::-1])
+            path.extend(self.opposite[direction] for direction in p[::-1])
         path.extend(pressure_plate)
 
         path = self.optimize_path(path)
         return path
 
-    def find_rooms(self):
-        rooms = dict()
+    def find_rooms(self, current_path: list[str] = None, next_direction: str = None):
+        if current_path is None:
+            current_path = []
+        if current_path and self.opposite[next_direction] == current_path[-1]:
+            # We are going back to the previous room
+            return
 
-        path = []
-        available_directions = []
+        path = current_path[:]
+        computer = IntcodeComputer(self.data)
+        if next_direction is not None:
+            path.append(next_direction)
+        for direction in path:
+            computer.input_str(direction)
 
         room_name_regex = re.compile(r"== (.+) ==")
-        directions_regex = re.compile(r"- (north|east|south|west)")
-        while True:
-            buffer = ""
-            computer = IntcodeComputer(self.data)
-            for c in computer.iter():
-                if c == ord("?"):
-                    room_name_match = room_name_regex.findall(buffer)
-                    if room_name_match:
-                        room_name = room_name_match[-1]
-                        if room_name not in rooms:
-                            rooms[room_name] = self.optimize_path(path.copy())
-                            print("Found new room: '" + room_name + "'")
-                    directions_match = directions_regex.findall(buffer)
-                    if directions_match:
-                        available_directions = directions_match
-                        random_dir = random.choice(available_directions)
-                        path.append(random_dir)
-                        computer.input_str(random_dir)
-                    buffer = ""
-                buffer += chr(c)
+        # All directions where we do not autmatically get sent to another room
+        directions_regex = re.compile(r"- (north|east|south|west)(?!.*==)", re.DOTALL)
+
+        buffer = ""
+        for c in computer.iter():
+            buffer += chr(c)
+            if not buffer.endswith("Command?"):
+                continue
+            room_name = room_name_regex.findall(buffer)[0]
+            if room_name in self.rooms:
+                buffer = ""
+                continue
+
+            self.rooms[room_name] = path
+            print("Found new room: '" + room_name + "'")
+            if room_name == "Pressure-Sensitive Floor":
+                return
+
+            directions = directions_regex.findall(buffer)
+            for direction in directions:
+                self.find_rooms(path, direction)
+            break
 
     def run(self, all_items, pressure_plate):
         directions = ["north", "east", "south", "west"]
         N, E, S, W = directions
-        opposite = {N: S, S: N, E: W, W: E}
 
         bad = {
             "escape pod",  # quits the game
@@ -82,7 +97,7 @@ class Solution:
         for items in itertools.chain.from_iterable(
             itertools.combinations(safe.items(), r) for r in range(len(safe), 0, -1)
         ):
-            path = self.generate_path(items, opposite, pressure_plate)
+            path = self.generate_path(items, pressure_plate)
 
             s = ""
             computer = IntcodeComputer(self.data)
@@ -124,7 +139,8 @@ def main():
     start = time.perf_counter()
 
     solution = Solution()
-    print(solution.find_rooms())
+    solution.find_rooms()
+    pprint(solution.rooms)
     # print(f"Part 1: {solution.part1()}")
 
     print(f"\nTotal time: {time.perf_counter() - start : .4f} sec")
