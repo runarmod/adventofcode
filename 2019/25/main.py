@@ -1,8 +1,4 @@
-from collections import deque
-from copy import deepcopy
 import itertools
-from pprint import pprint
-import random
 import re
 import time
 
@@ -84,6 +80,8 @@ class Solution:
             break
 
     def run(self, all_items, pressure_plate):
+        # Don't know how to generalize the bad items
+        # Fortunately, all inputs have the same bad items
         bad = {
             "escape pod",  # quits the game
             "infinite loop",  # infinite loop...
@@ -112,25 +110,13 @@ class Solution:
         return None
 
     def part1(self):
-        directions = ["north", "east", "south", "west"]
-        N, E, S, W = directions
+        self.find_rooms()
 
-        # See map.pdf
-        pressure_plate = [E, N, E, N, E, E, S, W, N, W]
+        pressure_plate = self.rooms["Pressure-Sensitive Floor"]
         items = {
-            "escape pod": [E, S],
-            "spool of cat6": [E, N, N],
-            "mug": [E, N, E],
-            "infinite loop": [E, N, E, N, N],
-            "asterisk": [E, N, E, N, N, W],
-            "molten lava": [E, N, E, N, N, W, N],
-            "monolith": [E, N, E, N, N, W, S],
-            "sand": [E, N, E, N, E],
-            "prime number": [E, N, E, N, E, S, W],
-            "photons": [E, N, E, N, E, E, N],
-            "giant electromagnet": [E, N, E, N, E, E],
-            "tambourine": [E, N, E, N, E, E, S],
-            "festive hat": [E, N, E, N, E, E, S, W],
+            item: self.rooms[room]
+            for room, items in self.items.items()
+            for item in items
         }
 
         return self.run(items, pressure_plate)
@@ -140,10 +126,7 @@ def main():
     start = time.perf_counter()
 
     solution = Solution()
-    solution.find_rooms()
-    pprint(solution.rooms)
-    pprint(solution.items)
-    # print(f"Part 1: {solution.part1()}")
+    print(f"Part 1: {solution.part1()}")
 
     print(f"\nTotal time: {time.perf_counter() - start : .4f} sec")
 
