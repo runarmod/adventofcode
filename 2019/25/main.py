@@ -30,27 +30,10 @@ class Solution:
         path = self.optimize_path(path, opposite)
         return path
 
-    def part1(self):
+    def run(self, all_items, pressure_plate):
         directions = ["north", "east", "south", "west"]
         N, E, S, W = directions
         opposite = {N: S, S: N, E: W, W: E}
-
-        # See map.pdf
-        all_items = {
-            "escape pod": [E, S],
-            "spool of cat6": [E, N, N],
-            "mug": [E, N, E],
-            "infinite loop": [E, N, E, N, N],
-            "asterisk": [E, N, E, N, N, W],
-            "molten lava": [E, N, E, N, N, W, N],
-            "monolith": [E, N, E, N, N, W, S],
-            "sand": [E, N, E, N, E],
-            "prime number": [E, N, E, N, E, S, W],
-            "photons": [E, N, E, N, E, E, N],
-            "giant electromagnet": [E, N, E, N, E, E],
-            "tambourine": [E, N, E, N, E, E, S],
-            "festive hat": [E, N, E, N, E, E, S, W],
-        }
 
         bad = {
             "escape pod",  # quits the game
@@ -60,9 +43,6 @@ class Solution:
             "molten lava",  # burned
             "monolith",  # too heavy on its own
         }
-
-        # See map.pdf
-        pressure_plate = [E, N, E, N, E, E, S, W, N, W]
 
         safe = {k: v for k, v in all_items.items() if k not in bad}
 
@@ -81,6 +61,30 @@ class Solution:
             else:
                 return int(re.search(r"\d+", s[-100:]).group())
         return None
+
+    def part1(self):
+        directions = ["north", "east", "south", "west"]
+        N, E, S, W = directions
+
+        # See map.pdf
+        pressure_plate = [E, N, E, N, E, E, S, W, N, W]
+        items = {
+            "escape pod": [E, S],
+            "spool of cat6": [E, N, N],
+            "mug": [E, N, E],
+            "infinite loop": [E, N, E, N, N],
+            "asterisk": [E, N, E, N, N, W],
+            "molten lava": [E, N, E, N, N, W, N],
+            "monolith": [E, N, E, N, N, W, S],
+            "sand": [E, N, E, N, E],
+            "prime number": [E, N, E, N, E, S, W],
+            "photons": [E, N, E, N, E, E, N],
+            "giant electromagnet": [E, N, E, N, E, E],
+            "tambourine": [E, N, E, N, E, E, S],
+            "festive hat": [E, N, E, N, E, E, S, W],
+        }
+
+        return self.run(items, pressure_plate)
 
 
 def main():
