@@ -27,13 +27,13 @@ class Solution:
             else:
                 return path
 
-    def generate_path(self, items, pressure_plate):
+    def generate_path(self, items, endpoint):
         path = []
         for item, p in items:
             path.extend(p)
             path.append("take " + item)
             path.extend(self.opposite[direction] for direction in p[::-1])
-        path.extend(pressure_plate)
+        path.extend(endpoint)
 
         path = self.optimize_path(path)
         return path
@@ -79,6 +79,18 @@ class Solution:
                 self.find_rooms(path, direction)
             break
 
+    def gather_all_items(self, items, security_checkpoint):
+        computer = IntcodeComputer(self.data)
+        # Create path to all items and the security checkpoint
+        path = self.generate_path(items.items(), security_checkpoint)
+        computer.input_str("\n".join(path))
+
+        # Execute the path and stop at the security checkpoint
+        for _ in computer.iter():
+            if len(computer.inputs) == 0:
+                break
+        return computer
+
     def run(self, all_items, pressure_plate):
         # Don't know how to generalize the bad items
         # Fortunately, all inputs have the same bad items
@@ -93,15 +105,19 @@ class Solution:
 
         safe = {k: v for k, v in all_items.items() if k not in bad}
 
-        for items in itertools.chain.from_iterable(
-            itertools.combinations(safe.items(), r) for r in range(len(safe), 0, -1)
+        checkpoint, last_path = pressure_plate[:-1], pressure_plate[-1]
+        computer = self.gather_all_items(safe, checkpoint)
+
+        for items_to_drop in itertools.chain.from_iterable(
+            itertools.combinations(safe.keys(), r) for r in range(len(safe))
         ):
-            path = self.generate_path(items, pressure_plate)
+            final_commands = [f"drop {item}" for item in items_to_drop]
+            final_commands.append(last_path)
+            new_computer = computer.copy()
+            new_computer.input_str("\n".join(final_commands))
 
             s = ""
-            computer = IntcodeComputer(self.data)
-            computer.input_str("\n".join(path))
-            for c in computer.iter():
+            for c in new_computer.iter():
                 if s[-7:] == "lighter" or s[-7:] == "heavier":
                     break
                 s += chr(c)

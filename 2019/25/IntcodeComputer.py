@@ -1,4 +1,5 @@
 from collections import defaultdict
+from copy import deepcopy
 
 
 class Halt(Exception):
@@ -69,10 +70,21 @@ class IntcodeComputer:
         )
 
         self.output = None
-        # self.out_function = print
+        # self.out_function = lambda c: print(chr(c), end="")
         self.out_function = lambda _: None
 
         self.relative_base: int = 0
+
+    def copy(self):
+        new = IntcodeComputer([])
+        new.memory.memory = deepcopy(self.memory.memory)
+        new.pc = self.pc
+        new.halted = self.halted
+        new.inputs = self.inputs[:]
+        new.output = self.output
+        new.out_function = self.out_function
+        new.relative_base = self.relative_base
+        return new
 
     def replace(self, index, value):
         self.memory[index] = value
@@ -82,7 +94,7 @@ class IntcodeComputer:
             self.inputs.append(value)
 
     def take_str_input(self):
-        inn = input("Input here:")
+        inn = input("")
         if inn == "q":
             raise Halt("User quit")
         self.input_str(inn)
@@ -116,7 +128,7 @@ class IntcodeComputer:
         if opcode == 99:
             raise Halt
 
-        assert opcode in range(1, len(self.operations)), opcode
+        assert opcode in range(1, len(self.operations)), f"{opcode=}"
 
         modes = [(self.memory[self.pc] // div) % 10 for div in [100, 1000, 10000]]
         parameters = [
