@@ -11,6 +11,7 @@ from pprint import pprint
 
 import networkx as nx
 
+os.chdir(os.path.dirname(__file__))
 sys.path.insert(0, "../../")
 from utils import copy_answer, request_submit, write_solution
 
