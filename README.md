@@ -4,12 +4,13 @@
 
 This repository contains of all of my code from [advent of code](https://adventofcode.com/).
 
-There is a setup file, which will initiate a work-directory with a template, in addition to downloading the input using a cookie found in [.env](https://github.com/runarmod/adventofcode/blob/main/.env.example). There are also extra utility files/functions in the [utils/](./utils/) folder, which can be used to download all inputs, update the stars in the README, and sending answers to the aoc website.
+You have to install the package (`pip install package/`) to be able to use the helper functions. Use the `config` command to set the needed variables (`python3 -m aoc_utils_runarmod config`). There are some utility commands/functions which can be used to download all inputs, update the stars in the README, and sending answers to the aoc website.
 
 ## My statistics
 
 <!-- START STATS -->
 ```py
+[2024]  0*
 [2023] 50*
 [2022] 50*
 [2021] 50*
@@ -26,39 +27,47 @@ Total stars: 450*
 
 ## Installation
 
-Clone the directory, install dependencies, and copy the .env file. Make sure to fill in the advent of code cookie in the .env file.
+Clone the directory, install the package, and set the configuration.
 
 ```bash
 git clone https://github.com/runarmod/adventofcode.git
 cd adventofcode
-pip3 install -r requirements.txt
-cp .env.example .env
+pip install package/
+python3 -m aoc_utils_runarmod config -c <cookie>
+python3 -m aoc_utils_runarmod config -r <repo>
+python3 -m aoc_utils_runarmod config -t <template>
 ```
 
 ## Usage
 
-Delete directories 2015-2023 if you want to start from scratch.
+Delete directories 2015-2024 if you want to start from scratch.
 
 Create a work-directory for december 1st 2015, download the input file, and open the directory in vs-code.
 
 ```bash
-python3 setup.py -y 2015 -d 1 -c
+python3 -m aoc_utils_runarmod start -y 2015 -d 1 -c
 ```
 
 Create a work-directory for today, open the directory in vs-code and wait for the release to download the input file and open the problem in the browser.
 
 ```bash
-python3 setup.py -twcb
+python3 -m aoc_utils_runarmod start -twcb
 ```
 
 Force download the input file for today.
 
 ```bash
-python3 setup.py -if
+python3 -m aoc_utils_runarmod start -if
 ```
 
 Force creation of a work-directory for december 24th 2021. This will overwrite any existing directory and files.
 
 ```bash
-python3 setup.py -f -y 2021 -d 24
+python3 -m aoc_utils_runarmod start -f -y 2021 -d 24
+```
+
+Update the stars in the README.
+
+```bash
+python3 -m aoc_utils_runarmod updateStats
 ```

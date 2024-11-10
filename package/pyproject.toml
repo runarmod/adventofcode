@@ -1,0 +1,31 @@
+[build-system]
+requires = [
+    "setuptools>=61.0",
+    "pytz",
+    "pause",
+    "requests",
+    "colorama",
+    "python-dotenv",
+    "tqdm",
+    "bs4",
+    "pyperclip",
+    "markdownify",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aoc_utils_runarmod"
+version = "0.0.1"
+authors = [{ name = "Runar Saur Modahl", email = "runarmod@gmail.com" }]
+description = "A simple package to help with Advent of Code"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/runarmod/adventofcode"
+Issues = "https://github.com/runarmod/adventofcode/issues"

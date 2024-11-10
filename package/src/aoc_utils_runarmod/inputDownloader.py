@@ -28,16 +28,11 @@ from typing import Generator
 import requests
 from colorama import Fore
 from colorama import init as colorama_init
-from dotenv import load_dotenv
 from tqdm import trange
 
-colorama_init(autoreset=True)
-load_dotenv()
-COOKIE = os.getenv("COOKIE")
-if COOKIE is None:
-    sys.exit(f"{Fore.YELLOW}COOKIE not found in .env")
+from .config import get_cookie, get_repo_path
 
-ROOT_PATH = os.path.join(os.path.dirname(__file__), "..")
+colorama_init(autoreset=True)
 
 
 class Logging:
@@ -105,6 +100,7 @@ def get_years_and_days_to_download(
     logger: Logging,
 ) -> Generator[tuple[int, int], None, None]:
     """Yields all years and days that should be downloaded."""
+    REPO_PATH = get_repo_path()
     years = range(2015, datetime.datetime.now().year + 1)
     days = range(1, 26)
 
@@ -114,7 +110,7 @@ def get_years_and_days_to_download(
 
     for year in years:
         logger.set_year(year)
-        year_path = os.path.join(ROOT_PATH, str(year))
+        year_path = os.path.join(REPO_PATH, str(year))
 
         if not os.path.isdir(year_path):
             logger.year_not_found()
@@ -138,11 +134,13 @@ def get_years_and_days_to_download(
 
 def download_input(year: int, day: int, logger: Logging, sleep_duration: float) -> None:
     """Downloads the input for the given year and day."""
+    COOKIE = get_cookie()
+    REPO_PATH = get_repo_path()
     URL = f"https://adventofcode.com/{year}/day/{day}/input"
     cookies = {"session": COOKIE}
     USER_AGENT = (
         "ONE-TIME USAGE TO GET ALL INPUTS ON 2nd PC SINCE NO INPUTS ARE SAVED ON MY GITHUB: "
-        + "github.com/runarmod/adventofcode/blob/main/utils/inputDownloader.py by runarmod@gmail.com"
+        + "github.com/runarmod/adventofcode/blob/main/package/src/aoc_utils_runarmod/inputDownloader.py by runarmod@gmail.com"
     )
     headers = {"User-Agent": USER_AGENT}
 
@@ -152,7 +150,7 @@ def download_input(year: int, day: int, logger: Logging, sleep_duration: float) 
             f"{Fore.RED}Input download failed\nError: {page.status_code}\n{page.content}"
         )
 
-    input_path = os.path.join(ROOT_PATH, str(year), str(day).zfill(2), "input.txt")
+    input_path = os.path.join(REPO_PATH, str(year), str(day).zfill(2), "input.txt")
 
     with open(input_path, "w") as f:
         f.write(page.text)
@@ -168,10 +166,11 @@ def download_inputs(logger: Logging, sleep_duration: float) -> None:
     logger.summarize()
 
 
-def main() -> None:
+def main(args: list[str] = None) -> None:
     parser = argparse.ArgumentParser(
         description="Download all inputs for all saved days and years.",
-        epilog="Example: `python3 ./utils/inputDownloader.py -v`",
+        epilog="Example: `python3 -m aoc_utils_runarmod inputDownloader -v`",
+        prog="aoc_utils_runarmod inputDownloader",
     )
     parser.add_argument(
         "-v",
@@ -189,7 +188,10 @@ def main() -> None:
         type=float,
         default=1,
     )
-    args = parser.parse_args()
+    if args is None:
+        args = parser.parse_args()
+    else:
+        args = parser.parse_args(args)
 
     if args.verbose:
         logger = Logging(True)

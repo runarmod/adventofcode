@@ -17,18 +17,14 @@ import pytz
 import requests
 from colorama import Fore
 from colorama import init as colorama_init
-from dotenv import load_dotenv
 
-from utils import countdown
+from .config import get_cookie, get_repo_path, get_template_path
+from .countdown import countdown
 
 colorama_init(autoreset=True)
-load_dotenv()
-COOKIE = os.getenv("COOKIE")
-if COOKIE is None:
-    sys.exit(f"{Fore.YELLOW}COOKIE not found in .env")
 
 
-def main():
+def main(args: list[str] = None):
     def updateNow():
         global now
         now = datetime.now(tz=pytz.timezone("EST"))
@@ -37,7 +33,8 @@ def main():
     parser = argparse.ArgumentParser(
         description="AOC setup and download. If neither day nor year is supplied, "
         + "today's day will be used.",
-        epilog="Example: `python3 setup.py -d 13 -y 2018 -cb`",
+        epilog="Example: `python3 -m aoc_utils_runarmod start -d 13 -y 2018 -cb`",
+        prog="aoc_utils_runarmod start",
     )
     parser.add_argument(
         "-d", help="Day", default=now.day, choices=range(1, 25 + 1), type=int
@@ -72,7 +69,11 @@ def main():
         help="Force download and file-creation even when they exist. DANGEROUS!",
     )
 
-    args = parser.parse_args()
+    if args is None:
+        args = parser.parse_args()
+    else:
+        args = parser.parse_args(args)
+
     if args.today:
         args.d = now.day
         args.y = now.year
@@ -109,9 +110,11 @@ def main():
             + f"Time remaining: {release - now}"
         )
 
+    COOKIE = get_cookie()
+    REPO_PATH = get_repo_path()
+
     # Make new year directory if it doesn't exist
-    setupPyAbsDir = os.path.abspath(os.path.dirname(__file__))
-    path = os.path.join(setupPyAbsDir, str(args.y))
+    path = os.path.join(REPO_PATH, str(args.y))
     with contextlib.suppress(OSError):
         os.mkdir(path)
 
@@ -130,8 +133,9 @@ def main():
 
         # Create part 1 and 2
         if not os.path.exists(mainPath := os.path.join(path, "main.py")) or args.f:
+            template_path = get_template_path()
             with open(mainPath, "w") as f:
-                with open(os.path.join(setupPyAbsDir, "template.py"), "r") as template:
+                with open(template_path, "r") as template:
                     f.write(
                         template.read()
                         .replace('"CHANGE_YEAR"', str(args.y))

@@ -1,22 +1,16 @@
 import os
-import sys
 
 import pyperclip
 import requests
 from bs4 import BeautifulSoup
 from colorama import Fore
 from colorama import init as colorama_init
-from dotenv import load_dotenv
 from markdownify import markdownify
 
-from utils.updateStats import update_stats
+from .config import get_cookie
+from .updateStats import update_stats
 
 colorama_init()
-
-load_dotenv()
-COOKIE = os.getenv("COOKIE")
-if COOKIE is None:
-    sys.exit(f"{Fore.RED}COOKIE not found in .env")
 
 
 def request_submit(
@@ -57,6 +51,7 @@ def submit(day: int, part: int, answer: str, url: str) -> bool:
     Submit the answer to the Advent of Code website, and print the response.
     Return True if the answer was correct, False otherwise.
     """
+    COOKIE = get_cookie()
     question = f"Answer for part {part} ({answer}) generated. Send? (y/[n]) "
     if day != 25 or part == 1:
         if input(question).lower() not in ("y", "ye", "yes"):

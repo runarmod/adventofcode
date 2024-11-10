@@ -10,10 +10,7 @@ from collections import defaultdict, deque
 from pprint import pprint
 
 import networkx as nx
-
-os.chdir(os.path.dirname(__file__))
-sys.path.insert(0, "../../")
-from utils import copy_answer, request_submit, write_solution
+from aoc_utils_runarmod import copy_answer, request_submit, write_solution
 
 
 def parseLine(line):
@@ -24,7 +21,9 @@ class Solution:
     def __init__(self, test=False):
         self.test = test
         filename = "testinput.txt" if self.test else "input.txt"
-        self.data = [parseLine(line) for line in open(filename).read().rstrip().split("\n")]
+        self.data = [
+            parseLine(line) for line in open(filename).read().rstrip().split("\n")
+        ]
 
     def part1(self):
         return None

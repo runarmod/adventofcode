@@ -1,13 +1,5 @@
-from collections import defaultdict
-from pprint import pprint
 import itertools
-import re
-import string
-import sys
 import os
-
-sys.path.insert(0, "../../")
-from utils.util import copy_answer, write_solution
 
 
 class IntCodeComputer:
@@ -62,11 +54,8 @@ def main():
     solution = IntCodeComputer()
     part1 = solution.part1()
     part2 = solution.part2()
-    print(part1_text := f"Part 1: {part1}")
-    print(part2_text := f"Part 2: {part2}")
-
-    copy_answer(part1, part2)
-    write_solution(os.path.dirname(os.path.realpath(__file__)), part1_text, part2_text)
+    print(f"Part 1: {part1}")
+    print(f"Part 2: {part2}")
 
 
 if __name__ == "__main__":
