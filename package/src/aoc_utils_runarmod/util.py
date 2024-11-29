@@ -1,5 +1,6 @@
 import os
 import re
+from datetime import datetime, timedelta
 
 import pyperclip
 import requests
@@ -96,7 +97,20 @@ def submit(year: int, day: int, part: int, answer: int | str):
         return SubmissionStatus.CORRECT
 
     if match := re.search(r"You have ([\w\d\s]+) left to wait", readable_response):
-        print(f"{Fore.RED}Timeout: {match.group(1)} left")
+        time_str = match.group(1)
+        hour_min = re.match(r"(\d+)m (\d+)s", time_str)
+        if not hour_min:
+            print(
+                f"{Fore.RED}Timeout: {time_str}.\n(This is an unexpected timeout format, please contact the developer)"
+            )
+            return SubmissionStatus.ERROR
+        minutes, seconds = map(int, hour_min.groups())
+
+        print(f"{Fore.RED}Timeout: {time_str} left")
+        now = datetime.now()
+        future = now + timedelta(minutes=minutes, seconds=seconds)
+        print(f"{Fore.BLUE}Try again at {future.strftime('%H:%M:%S')}")
+
         return SubmissionStatus.ERROR
 
     if "You don't seem to be solving the right level" in readable_response:
@@ -108,7 +122,18 @@ def submit(year: int, day: int, part: int, answer: int | str):
     if match := re.search(
         r"Please wait ([\w\s]+) before trying again", readable_response, re.IGNORECASE
     ):
-        print(f"{Fore.RED}Timeout: {match.group(1)}")
+        time_str = match.group(1)
+        minutes = re.match(r"(\d+) minutes", time_str)
+        print(f"{Fore.RED}Timeout: {time_str}")
+        if not minutes:
+            print(
+                f"{Fore.RED}(This is an unexpected timeout format, please contact the developer)"
+            )
+        else:
+            now = datetime.now()
+            future = now + timedelta(minutes=int(minutes.group(1)))
+            print(f"{Fore.BLUE}Try again at {future.strftime('%H:%M:%S')}")
+        # Don't return an error status, as we might get more information (e.g. too high/low)
 
     if "too low" in readable_response.lower():
         print(f"{Fore.RED}Too low.")
@@ -118,7 +143,7 @@ def submit(year: int, day: int, part: int, answer: int | str):
         print(f"{Fore.RED}Too high.")
         return SubmissionStatus.TOO_HIGH
 
-    if "That's not the right answer" in readable_response:
+    if "not the right answer" in readable_response.lower():
         print(f"{Fore.RED}Incorrect.")
         return SubmissionStatus.INCORRECT
 
