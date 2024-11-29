@@ -63,7 +63,7 @@ def get_repo_path() -> str:
 
 def set_repo_path(repo_path: str) -> bool:
     config = read_config()
-    config["repo_path"] = repo_path
+    config["repo_path"] = os.path.abspath(repo_path)
     with open(CONFIG_PATH, "w") as f:
         json.dump(config, f, indent=4)
     return True
@@ -78,7 +78,7 @@ def get_template_path() -> str:
 
 def set_template_path(template_path: str) -> bool:
     config = read_config()
-    config["template_path"] = template_path
+    config["template_path"] = os.path.abspath(template_path)
     with open(CONFIG_PATH, "w") as f:
         json.dump(config, f, indent=4)
     return True
