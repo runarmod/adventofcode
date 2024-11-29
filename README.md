@@ -48,10 +48,10 @@ Create a work-directory for december 1st 2015, download the input file, and open
 python3 -m aoc_utils_runarmod start -y 2015 -d 1 -c
 ```
 
-Create a work-directory for today, open the directory in vs-code and wait for the release to download the input file and open the problem in the browser.
+Create a work-directory for tomorrow, open the directory in vs-code and wait for the release to download the input file and open the problem in the browser.
 
 ```bash
-python3 -m aoc_utils_runarmod start -twcb
+python3 -m aoc_utils_runarmod start -wcb
 ```
 
 Force download the input file for today.
