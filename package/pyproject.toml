@@ -19,11 +19,21 @@ version = "0.0.1"
 authors = [{ name = "Runar Saur Modahl", email = "runarmod@gmail.com" }]
 description = "A simple package to help with Advent of Code"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.12"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+]
+dependencies = [
+    "bs4>=0.0.2",
+    "colorama>=0.4.6",
+    "markdownify>=0.14.1",
+    "pause>=0.3",
+    "pyperclip>=1.9.0",
+    "pytz>=2024.2",
+    "requests>=2.32.3",
+    "tqdm>=4.67.1",
 ]
 
 [project.urls]

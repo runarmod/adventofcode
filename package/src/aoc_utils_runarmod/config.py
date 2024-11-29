@@ -93,6 +93,24 @@ def missing_config() -> list[str]:
     return missing
 
 
+def get_db_path() -> str:
+    return os.path.join(BASE_PATH, "submissions.db")
+
+
+def missing_db() -> bool:
+    return not os.path.exists(get_db_path())
+
+
+def ensure_db() -> bool:
+    if missing_db():
+        print(f"{Fore.RED}Database not found. Creating one.")
+        from .db import create_db
+
+        create_db()
+        return True
+    return False
+
+
 def main(args: list[str] = None):
     parser = argparse.ArgumentParser(description="Modify/see config settings")
     parser.add_argument(
