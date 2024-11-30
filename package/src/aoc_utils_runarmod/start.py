@@ -7,11 +7,11 @@ vs code session. Read more in the README.md file.
 
 import argparse
 import contextlib
+import datetime
 import os
 import re
 import sys
 import webbrowser
-from datetime import datetime
 
 import pytz
 import requests
@@ -25,9 +25,11 @@ colorama_init(autoreset=True)
 
 
 def main(args: list[str] = None):
+    now = None
+
     def updateNow():
-        global now
-        now = datetime.now(tz=pytz.timezone("EST"))
+        nonlocal now
+        now = datetime.datetime.now(tz=pytz.timezone("EST"))
 
     updateNow()
     parser = argparse.ArgumentParser(
@@ -58,7 +60,7 @@ def main(args: list[str] = None):
         "-w",
         "--wait",
         action="store_true",
-        help="Create template, wait for puzzle to be released, and download it.",
+        help="Create template, wait for puzzle to be released (next midnight), and download it.",
     )
     parser.add_argument("-i", action="store_true", help="Only download input.")
     parser.add_argument("-b", action="store_true", help="Open browser.")
@@ -78,10 +80,6 @@ def main(args: list[str] = None):
         args.d = now.day
         args.y = now.year
 
-    if args.wait:
-        args.d = now.day + 1
-        args.y = now.year
-
     if args.url:
         m = re.match(
             r"https?://adventofcode.com/(?P<year>\d{4})/day/(?P<day>\d{1,2})", args.url
@@ -96,6 +94,15 @@ def main(args: list[str] = None):
     release = now.replace(
         year=args.y, month=12, day=args.d, hour=0, minute=0, second=0, microsecond=0
     )
+
+    if args.wait:
+        release = (now + datetime.timedelta(days=1)).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+        if release.month != 12 or release.day not in range(1, 26):
+            sys.exit(
+                f"{Fore.RED}Can't wait for a day that's not in December. Quiting..."
+            )
 
     if now < release and not args.wait:
         sys.exit(
@@ -114,12 +121,12 @@ def main(args: list[str] = None):
     REPO_PATH = get_repo_path()
 
     # Make new year directory if it doesn't exist
-    path = os.path.join(REPO_PATH, str(args.y))
+    path = os.path.join(REPO_PATH, str(release.year))
     with contextlib.suppress(OSError):
         os.mkdir(path)
 
     # Make new day directory if it doesn't exist
-    path = os.path.join(path, str(args.d).zfill(2))
+    path = os.path.join(path, str(release.day).zfill(2))
     with contextlib.suppress(OSError):
         os.mkdir(path)
 
@@ -138,11 +145,11 @@ def main(args: list[str] = None):
                 with open(template_path, "r") as template:
                     f.write(
                         template.read()
-                        .replace('"CHANGE_YEAR"', str(args.y))
-                        .replace('"CHANGE_DATE"', str(args.d))
+                        .replace('"CHANGE_YEAR"', str(release.year))
+                        .replace('"CHANGE_DATE"', str(release.day))
                     )
 
-    URL = f"https://adventofcode.com/{args.y}/day/{args.d}"
+    URL = f"https://adventofcode.com/{release.year}/day/{release.day}"
 
     # Open VS Code
     if args.c:
