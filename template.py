@@ -29,13 +29,29 @@ def parseLine(line):
     return line
 
 
+def parseLines(lines):
+    return [parseLine(line) for line in lines]
+
+
+def parseNumbers(line):
+    return tuple(map(int, re.findall(r"-?\d+", line)))
+
+
+def parseGrid(lines):
+    return [list(line) for line in lines]
+
+
 class Solution:
     def __init__(self, test=False):
         self.test = test
         filename = "testinput.txt" if self.test else "input.txt"
-        self.data = [
-            parseLine(line) for line in open(filename).read().rstrip().split("\n")
-        ]
+        with open(filename) as f:
+            data = f.read().rstrip()
+
+        self.data = parseNumbers(data)
+        # self.data = list(map(parseNumbers, data.split("\n\n")))
+        # self.data = parseLines(data)
+        # self.data = parseGrid(data)
 
     def part1(self):
         return None
