@@ -25,13 +25,8 @@ colorama_init(autoreset=True)
 
 
 def main(args: list[str] = None):
-    now = None
+    now = datetime.datetime.now(tz=pytz.timezone("EST"))
 
-    def updateNow():
-        nonlocal now
-        now = datetime.datetime.now(tz=pytz.timezone("EST"))
-
-    updateNow()
     parser = argparse.ArgumentParser(
         description="AOC setup and download. If neither day nor year is supplied, "
         + "today's day will be used.",
@@ -159,7 +154,6 @@ def main(args: list[str] = None):
     if not os.path.exists(inputPath := os.path.join(path, "input.txt")) or args.f:
         if args.wait:
             # Wait for puzzle to be released
-            updateNow()
             if not countdown(release):
                 sys.exit(f"{Fore.RED}Countdown failed. Quiting...")
 
