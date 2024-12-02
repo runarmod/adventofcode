@@ -199,7 +199,7 @@ def get_data(year: int, day: int):
             raise Exception(
                 f"Input download failed\nError: {page.status_code}\n{page.content}"
             )
-        data = page.content.decode()
+        data = page.text
         insert_input(year, day, data)
 
     with open(input_file_path, "w") as f:

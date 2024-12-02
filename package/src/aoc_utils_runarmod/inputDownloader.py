@@ -21,16 +21,15 @@ which have a folder ready.
 import argparse
 import datetime
 import os
-import sys
 import time
 from typing import Generator
 
-import requests
 from colorama import Fore
 from colorama import init as colorama_init
 from tqdm import trange
 
-from .config import get_cookie, get_repo_path
+from .config import get_repo_path
+from .util import get_data
 
 colorama_init(autoreset=True)
 
@@ -134,27 +133,7 @@ def get_years_and_days_to_download(
 
 def download_input(year: int, day: int, logger: Logging, sleep_duration: float) -> None:
     """Downloads the input for the given year and day."""
-    COOKIE = get_cookie()
-    REPO_PATH = get_repo_path()
-    URL = f"https://adventofcode.com/{year}/day/{day}/input"
-    cookies = {"session": COOKIE}
-    USER_AGENT = (
-        "ONE-TIME USAGE TO GET ALL INPUTS ON 2nd PC SINCE NO INPUTS ARE SAVED ON MY GITHUB: "
-        + "github.com/runarmod/adventofcode/blob/main/package/src/aoc_utils_runarmod/inputDownloader.py by runarmod@gmail.com"
-    )
-    headers = {"User-Agent": USER_AGENT}
-
-    page = requests.get(URL, cookies=cookies, headers=headers)
-    if page.status_code != 200:
-        sys.exit(
-            f"{Fore.RED}Input download failed\nError: {page.status_code}\n{page.content}"
-        )
-
-    input_path = os.path.join(REPO_PATH, str(year), str(day).zfill(2), "input.txt")
-
-    with open(input_path, "w") as f:
-        f.write(page.text)
-
+    get_data(year, day)
     logger.downloaded()
     time.sleep(sleep_duration)
 
