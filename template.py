@@ -10,7 +10,7 @@ from collections import defaultdict, deque
 from pprint import pprint
 
 import networkx as nx
-from aoc_utils_runarmod import copy_answer, request_submit, write_solution
+from aoc_utils_runarmod import copy_answer, get_data, request_submit, write_solution
 from more_itertools import (
     collapse,  # flatten all levels of nested iterables
     consume,  # exhaust an iterable
@@ -44,9 +44,11 @@ def parseGrid(lines):
 class Solution:
     def __init__(self, test=False):
         self.test = test
-        filename = "testinput.txt" if self.test else "input.txt"
-        with open(filename) as f:
-            data = f.read().rstrip()
+        data = (
+            get_data("CHANGE_YEAR", "CHANGE_DATE")
+            if not self.test
+            else open("testinput.txt").read()
+        ).rstrip()
 
         self.data = parseNumbers(data)
         # self.data = list(map(parseNumbers, data.split("\n\n")))

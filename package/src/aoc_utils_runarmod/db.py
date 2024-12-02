@@ -52,6 +52,18 @@ def create_db():
             )
     """
     )
+    c.execute(
+        """
+        CREATE TABLE
+            inputs (
+                year INT NOT NULL,
+                day INT NOT NULL,
+                input TEXT NOT NULL,
+                timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (year, day)
+            )
+        """
+    )
 
     conn.commit()
     conn.close()
@@ -88,9 +100,7 @@ def validate_submission(
     if already_guessed(year, day, part, submission):
         return (False, "You have already guessed this submission (cached).")
     min_value, max_value = get_bounds(year, day, part)
-    message = (
-        f"Submission ({submission}) must be in the range ({min_value}, {max_value}) (cached)."
-    )
+    message = f"Submission ({submission}) must be in the range ({min_value}, {max_value}) (cached)."
     if min_value is not None and submission < min_value:
         return (False, message)
     if max_value is not None and submission > max_value:
@@ -244,5 +254,45 @@ def insert_failed_submission(
             (year, day, part, submission_int, submission_int, submission_int),
         )
 
+    conn.commit()
+    conn.close()
+
+
+def get_input(year: int, day: int) -> str:
+    db_path = get_db_path()
+    conn = sqlite3.connect(db_path)
+    c = conn.cursor()
+    c.execute(
+        """
+        SELECT
+            input
+        FROM
+            inputs
+        WHERE
+            year = ?
+            AND day = ?
+        """,
+        (year, day),
+    )
+    result = c.fetchone()
+    conn.close()
+    if result is None:
+        raise KeyError(f"Input for year {year}, day {day} not found")
+    return result[0]
+
+
+def insert_input(year: int, day: int, input: str):
+    db_path = get_db_path()
+    conn = sqlite3.connect(db_path)
+    c = conn.cursor()
+    c.execute(
+        """
+        INSERT OR REPLACE INTO
+            inputs (year, day, input)
+        VALUES
+            (?, ?, ?)
+        """,
+        (year, day, input),
+    )
     conn.commit()
     conn.close()

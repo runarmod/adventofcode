@@ -9,11 +9,13 @@ from colorama import Fore
 from colorama import init as colorama_init
 from markdownify import markdownify
 
-from .config import get_cookie
+from .config import get_cookie, get_repo_path
 from .db import (
     SubmissionStatus,
+    get_input,
     insert_correct_submission,
     insert_failed_submission,
+    insert_input,
     validate_submission,
 )
 from .updateStats import update_stats
@@ -169,3 +171,37 @@ def copy_answer(part1: str | int | None, part2: str | int | None):
 
     if copy:
         pyperclip.copy(copy)
+
+
+def get_data(year: int, day: int):
+    """
+    Get the input data for a given year and day.
+    Reads the file in the cache, if it exists.
+    If neither the file in the repo nor the data is in the cache, it will download the data.
+    """
+    REPO_PATH = get_repo_path()
+    input_file_path = os.path.join(REPO_PATH, str(year), str(day).zfill(2), "input.txt")
+    if os.path.exists(input_file_path):
+        with open(input_file_path, "r") as f:
+            return f.read()
+
+    try:
+        data = get_input(year, day)
+    except KeyError:
+        URL = f"https://adventofcode.com/{year}/day/{day}"
+        cookies = {"session": get_cookie()}
+        inputURL = f"{URL}/input"
+        headers = {
+            "User-Agent": "github.com/runarmod/adventofcode by runarmod@gmail.com"
+        }
+        page = requests.get(inputURL, cookies=cookies, headers=headers)
+        if page.status_code != 200:
+            raise Exception(
+                f"Input download failed\nError: {page.status_code}\n{page.content}"
+            )
+        data = page.content.decode()
+        insert_input(year, day, data)
+
+    with open(input_file_path, "w") as f:
+        f.write(data)
+    return data

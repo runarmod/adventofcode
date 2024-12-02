@@ -14,12 +14,12 @@ import sys
 import webbrowser
 
 import pytz
-import requests
 from colorama import Fore
 from colorama import init as colorama_init
 
-from .config import get_cookie, get_repo_path, get_template_path
+from .config import get_repo_path, get_template_path
 from .countdown import countdown
+from .util import get_data
 
 colorama_init(autoreset=True)
 
@@ -117,7 +117,6 @@ def main(args: list[str] = None):
             + f"Time remaining: {release - now}"
         )
 
-    COOKIE = get_cookie()
     REPO_PATH = get_repo_path()
 
     # Make new year directory if it doesn't exist
@@ -156,8 +155,6 @@ def main(args: list[str] = None):
         print(f"{Fore.GREEN}Opening VS Code!")
         os.system(f"code {path}")
 
-    USER_AGENT = "github.com/runarmod/adventofcode by runarmod@gmail.com"
-
     # Make inputfile
     if not os.path.exists(inputPath := os.path.join(path, "input.txt")) or args.f:
         if args.wait:
@@ -166,17 +163,7 @@ def main(args: list[str] = None):
             if not countdown(release):
                 sys.exit(f"{Fore.RED}Countdown failed. Quiting...")
 
-        cookies = {"session": COOKIE}
-        inputURL = f"{URL}/input"
-        headers = {"User-Agent": USER_AGENT}
-        page = requests.get(inputURL, cookies=cookies, headers=headers)
-        if page.status_code != 200:
-            sys.exit(
-                f"{Fore.RED}Input download failed\nError: {page.status_code}\n{page.content}"
-            )
-
-        with open(inputPath, "w") as f:
-            f.write(page.content.decode())
+        get_data(release.year, release.day)
         print(f"{Fore.GREEN}Input downloaded to {inputPath}")
     else:
         print(f"{Fore.YELLOW}Inputfile already exists. Continuing...")
