@@ -100,5 +100,26 @@ def manhattan(p1: tuple[int, ...], p2: tuple[int, ...]):
     return sum(abs(a - b) for a, b in zip(p1, p2))
 
 
+def get_groups(data, rows=True, columns=True, diagonals=True):
+    """
+    https://stackoverflow.com/a/43311126/10880273
+    """
+
+    def groups(data: list[list], func):
+        grouping = defaultdict(list)
+        for y in range(len(data)):
+            for x in range(len(data[y])):
+                grouping[func(x, y)].append(data[y][x])
+        return ["".join(a) for a in map(grouping.get, sorted(grouping))]
+
+    if rows:
+        yield groups(data, lambda x, y: y)
+    if columns:
+        yield groups(data, lambda x, y: x)
+    if diagonals:
+        yield groups(data, lambda x, y: x + y)
+        yield groups(data, lambda x, y: x - y)
+
+
 if __name__ == "__main__":
     main()
