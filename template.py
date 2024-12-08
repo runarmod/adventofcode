@@ -48,7 +48,7 @@ class Solution:
             get_data("CHANGE_YEAR", "CHANGE_DATE")
             if not self.test
             else open("testinput.txt").read()
-        ).rstrip()
+        ).rstrip().split("\n")
 
         self.data = parseNumbers(data)
         # self.data = list(map(parseNumbers, data.split("\n\n")))
