@@ -96,16 +96,26 @@ def get_bounds(year: int, day: int, part: int) -> tuple[int | None, int | None]:
 
 def validate_submission(
     year: int, day: int, part: int, submission: int | str
-) -> tuple[bool, str]:
-    if already_guessed(year, day, part, submission):
-        return (False, f"You have already guessed this ({submission}) submission (cached).")
+) -> tuple[bool, str, bool]:
+    """
+    Validate a submission.
+    Returns a tuple of (valid, message, already_correct).
+    """
+    if already_guessed_failed(year, day, part, submission):
+        return (
+            False,
+            f"You have already guessed this ({submission}) submission (cached).",
+            False,
+        )
+    if has_correct_submission(year, day, part):
+        return (False, "You have already submitted the correct answer (cached).", True)
     min_value, max_value = get_bounds(year, day, part)
     message = f"Submission ({submission}) must be in the range ({min_value}, {max_value}) (cached)."
     if min_value is not None and submission < min_value:
-        return (False, message)
+        return (False, message, False)
     if max_value is not None and submission > max_value:
-        return (False, message)
-    return (True, "Submission is valid")
+        return (False, message, False)
+    return (True, "Submission is valid", False)
 
 
 def get_submission(year: int, day: int, part: int) -> int | str | None:
@@ -136,7 +146,11 @@ def get_submission(year: int, day: int, part: int) -> int | str | None:
     return submission_str
 
 
-def already_guessed(year: int, day: int, part: int, submission: Any) -> bool:
+def has_correct_submission(year: int, day: int, part: int) -> bool:
+    return get_submission(year, day, part) is not None
+
+
+def already_guessed_failed(year: int, day: int, part: int, submission: Any) -> bool:
     db_path = get_db_path()
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
