@@ -16,6 +16,7 @@ from .db import (
     insert_correct_submission,
     insert_failed_submission,
     insert_input,
+    save_code_snapshot,
     validate_submission,
 )
 from .updateStats import update_stats
@@ -63,6 +64,7 @@ def request_submit(
             if part == 1 and day == 25:
                 submit(year, day, 2, "0")
             insert_correct_submission(year, day, part, submission)
+            save_code_snapshot(year, day, part)
         case (
             SubmissionStatus.INCORRECT
             | SubmissionStatus.TOO_HIGH

@@ -1,8 +1,11 @@
+from datetime import datetime
+import os
+import shutil
 import sqlite3
 from enum import Enum
 from typing import Any
 
-from .config import get_db_path
+from .config import get_db_path, get_repo_path
 
 
 class SubmissionStatus(Enum):
@@ -310,3 +313,20 @@ def insert_input(year: int, day: int, input: str):
     )
     conn.commit()
     conn.close()
+
+
+def save_code_snapshot(year: int, day: int, part: int):
+    """
+    Will store the currect state of the code in the repository (not db).
+    Will store in repo_path/year/day/snapshot-partX-<timestamp>.py
+    """
+    repo_path = os.path.join(get_repo_path(), str(year), str(day))
+    code_path = os.path.join(repo_path, "main.py")
+
+    if not os.path.exists(code_path):
+        raise FileNotFoundError(f"Code file not found at {code_path}")
+
+    timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S-%f")
+    snapshot_path = os.path.join(repo_path, f"snapshot-part{part}-{timestamp}.py")
+
+    shutil.copy2(code_path, snapshot_path)
