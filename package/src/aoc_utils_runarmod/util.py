@@ -100,13 +100,15 @@ def submit(year: int, day: int, part: int, answer: int | str):
 
     if match := re.search(r"You have ([\w\d\s]+) left to wait", readable_response):
         time_str = match.group(1)
-        hour_min = re.match(r"(\d+)m (\d+)s", time_str)
+        hour_min = re.match(r"(?:(\d+)m )?(\d+)s", time_str)
         if not hour_min:
             print(
                 f"{Fore.RED}Timeout: {time_str}.\n(This is an unexpected timeout format, please contact the developer)"
             )
             return SubmissionStatus.ERROR
-        minutes, seconds = map(int, hour_min.groups())
+        minutes, seconds = hour_min.groups()
+        minutes = int(minutes) if minutes is not None else 0
+        seconds = int(seconds) if seconds is not None else 0
 
         print(f"{Fore.RED}Timeout: {time_str} left")
         now = datetime.now()
@@ -125,7 +127,7 @@ def submit(year: int, day: int, part: int, answer: int | str):
         r"Please wait ([\w\s]+) before trying again", readable_response, re.IGNORECASE
     ):
         time_str = match.group(1)
-        minutes = re.match(r"(\d+) minutes", time_str)
+        minutes = re.match(r"(\d+) minutes?", time_str)
         print(f"{Fore.RED}Timeout: {time_str}")
         if not minutes:
             print(
