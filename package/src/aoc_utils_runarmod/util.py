@@ -127,15 +127,25 @@ def submit(year: int, day: int, part: int, answer: int | str):
         r"Please wait ([\w\s]+) before trying again", readable_response, re.IGNORECASE
     ):
         time_str = match.group(1)
-        minutes = re.match(r"(\d+) minutes?", time_str)
+        match = re.match(r"(\d+|one|five|fifteen) minutes?", time_str)
         print(f"{Fore.RED}Timeout: {time_str}")
-        if not minutes:
+        if not match:
             print(
                 f"{Fore.RED}(This is an unexpected timeout format, please contact the developer)"
             )
         else:
+            minutes = match.group(1)
+            match minutes:
+                case "one":
+                    minutes = 1
+                case "five":
+                    minutes = 5
+                case "fifteen":
+                    minutes = 15
+                case _:
+                    minutes = int(minutes)
             now = datetime.now()
-            future = now + timedelta(minutes=int(minutes.group(1)))
+            future = now + timedelta(minutes=minutes)
             print(f"{Fore.BLUE}Try again at {future.strftime('%H:%M:%S')}")
         # Don't return an error status, as we might get more information (e.g. too high/low)
 

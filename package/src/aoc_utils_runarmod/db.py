@@ -98,7 +98,7 @@ def validate_submission(
     year: int, day: int, part: int, submission: int | str
 ) -> tuple[bool, str]:
     if already_guessed(year, day, part, submission):
-        return (False, "You have already guessed this submission (cached).")
+        return (False, f"You have already guessed this ({submission}) submission (cached).")
     min_value, max_value = get_bounds(year, day, part)
     message = f"Submission ({submission}) must be in the range ({min_value}, {max_value}) (cached)."
     if min_value is not None and submission < min_value:
