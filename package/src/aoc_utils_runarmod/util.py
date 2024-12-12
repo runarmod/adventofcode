@@ -46,7 +46,6 @@ def request_submit(
     if part == 1 and already_correct:
         print(f"{Fore.YELLOW}Part 1 is already correct. Interpreting as part 2.")
         part = 2
-        submission = part2
         valid, msg, _ = validate_submission(year, day, part, submission)
 
     if not valid:
