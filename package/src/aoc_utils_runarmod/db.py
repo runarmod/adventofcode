@@ -139,11 +139,11 @@ def get_submission(year: int, day: int, part: int) -> int | str | None:
         """,
         (year, day, part),
     )
-    result: tuple[int | None, str | None] = c.fetchone()
-    submission_int, submission_str = result
+    result: tuple[int | None, str | None] | None = c.fetchone()
     conn.close()
     if result is None:
         return None
+    submission_int, submission_str = result
     if submission_int is not None:
         return submission_int
     return submission_str
