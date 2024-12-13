@@ -2,8 +2,6 @@ import re
 import time
 
 from aoc_utils_runarmod import get_data
-from sympy import Eq, diophantine, solve, symbols
-from sympy.abc import a, b
 
 
 def parseNumbers(line):
@@ -26,36 +24,15 @@ class Solution:
                 s.append(parseNumbers(line))
             self.data.append(s)
 
-    def solve(self, A, B, prize):
-        eq1 = Eq(A[0] * a + B[0] * b, prize[0])
-        eq2 = Eq(A[1] * a + B[1] * b, prize[1])
-
-        sol = diophantine(eq1)
-        if not sol:
-            return 0
-        solutions_eq1 = next(iter(sol))
-
-        a_sol, b_sol = solutions_eq1
-
-        eq2_sub = eq2.subs({a: a_sol, b: b_sol})
-        t_values = solve(eq2_sub)
-        if not t_values:
-            return 0
-
-        t_0 = symbols("t_0", integer=True)
-        final_solutions = [
-            (a_sol.subs(t_0, t_val), b_sol.subs(t_0, t_val)) for t_val in t_values
-        ]
-        assert len(final_solutions) == 1
-
-        countA, countB = final_solutions[0]
-        return countA * 3 + countB
-
     def run(self, prize_func=lambda x: x):
         s = 0
         for machine in self.data:
-            A, B, prize = machine
-            s += self.solve(A, B, list(map(prize_func, prize)))
+            (A0, A1), (B0, B1), prize = machine
+            X, Y = map(prize_func, prize)
+            a = (B1 * X - B0 * Y) / (A0 * B1 - A1 * B0)
+            b = (A0 * Y - A1 * X) / (A0 * B1 - A1 * B0)
+            if all(abs(c - round(c)) < 1e-7 for c in (a, b)):
+                s += round(a) * 3 + round(b)
         return s
 
     def part1(self):
