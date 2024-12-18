@@ -112,12 +112,13 @@ def validate_submission(
         )
     if has_correct_submission(year, day, part):
         return (False, "You have already submitted the correct answer (cached).", True)
-    min_value, max_value = get_bounds(year, day, part)
-    message = f"Submission ({submission}) must be in the range ({min_value}, {max_value}) (cached)."
-    if min_value is not None and submission < min_value:
-        return (False, message, False)
-    if max_value is not None and submission > max_value:
-        return (False, message, False)
+    if isinstance(submission, int):
+        min_value, max_value = get_bounds(year, day, part)
+        message = f"Submission ({submission}) must be in the range ({min_value}, {max_value}) (cached)."
+        if min_value is not None and submission < min_value:
+            return (False, message, False)
+        if max_value is not None and submission > max_value:
+            return (False, message, False)
     return (True, "Submission is valid", False)
 
 
