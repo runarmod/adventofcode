@@ -9,7 +9,8 @@ import time
 from collections import defaultdict, deque
 from pprint import pprint
 
-import networkx as nx
+import networkx
+import z3
 from aoc_utils_runarmod import copy_answer, get_data, request_submit, write_solution
 from more_itertools import (
     collapse,  # flatten all levels of nested iterables
@@ -33,27 +34,36 @@ def parseLines(lines):
     return [parseLine(line) for line in lines]
 
 
-def parseNumbers(line):
+def nums(line: str) -> tuple[int, ...]:
     return tuple(map(int, re.findall(r"-?\d+", line)))
 
 
-def parseGrid(lines):
-    return [list(line) for line in lines]
+def numsNested(
+    data: str | list[str] | list[list[str]],
+) -> tuple[int | tuple[int, ...], ...]:
+    if isinstance(data, str):
+        return nums(data)
+    if not hasattr(data, "__iter__"):
+        raise ValueError("Data must be a tuple/list/iterable or a string")
+    return tuple(e[0] if len(e) == 1 else e for e in filter(len, map(numsNested, data)))
 
 
 class Solution:
     def __init__(self, test=False):
         self.test = test
         data = (
-            get_data("CHANGE_YEAR", "CHANGE_DATE")
-            if not self.test
-            else open("testinput.txt").read()
-        ).rstrip().split("\n")
+            (
+                get_data("CHANGE_YEAR", "CHANGE_DATE")
+                if not self.test
+                else open("testinput.txt").read()
+            )
+            .strip("\n")
+            .split("\n")
+        )
 
-        self.data = parseNumbers(data)
-        # self.data = list(map(parseNumbers, data.split("\n\n")))
+        self.data = numsNested(data)
         # self.data = parseLines(data)
-        # self.data = parseGrid(data)
+        # self.data = list(map(list, self.data))
 
     def part1(self):
         return None
@@ -98,27 +108,6 @@ def neighbors8(point: tuple[int, ...], jump=1):
 
 def manhattan(p1: tuple[int, ...], p2: tuple[int, ...]):
     return sum(abs(a - b) for a, b in zip(p1, p2))
-
-
-def get_groups(data, rows=True, columns=True, diagonals=True):
-    """
-    https://stackoverflow.com/a/43311126/10880273
-    """
-
-    def groups(data: list[list], func):
-        grouping = defaultdict(list)
-        for y in range(len(data)):
-            for x in range(len(data[y])):
-                grouping[func(x, y)].append(data[y][x])
-        return ["".join(a) for a in map(grouping.get, sorted(grouping))]
-
-    if rows:
-        yield groups(data, lambda x, y: y)
-    if columns:
-        yield groups(data, lambda x, y: x)
-    if diagonals:
-        yield groups(data, lambda x, y: x + y)
-        yield groups(data, lambda x, y: x - y)
 
 
 if __name__ == "__main__":
