@@ -1,7 +1,6 @@
 import re
 import time
 
-import z3
 from aoc_utils_runarmod import get_data
 
 
@@ -19,64 +18,72 @@ class Solution:
         self.A, self.B, self.C, *self.program = self.data = parseNumbers(data)
 
     def part1(self):
-        return ",".join(map(str, self.computer()))
+        return ",".join(map(str, self.run_computer()))
 
-    def computer(self):
+    def part2(self):
+        return self.find_A()
+
+    def get_next_output(self, A, B, C, pointer=0):
         def combo(num):
             if num in range(4):
                 return num
             if num in range(4, 7):
-                return [self.A, self.B, self.C][num - 4]
+                return [A, B, C][num - 4]
             assert False, f"Invalid combo operand {num}"
 
-        outputs = []
-        pointer = 0
         while pointer in range(len(self.program)):
+            operand = self.program[pointer + 1]
             match self.program[pointer]:
                 case 0:
-                    self.A = self.A >> combo(self.program[pointer + 1])
+                    A >>= combo(operand)
                 case 1:
-                    self.B = self.B ^ self.program[pointer + 1]
+                    B ^= operand
                 case 2:
-                    self.B = combo(self.program[pointer + 1]) % 8
+                    B = combo(operand) >> 3
                 case 3:
-                    if self.A != 0:
-                        pointer = self.program[pointer + 1]
+                    if A != 0:
+                        pointer = operand
                         continue
                 case 4:
-                    self.B ^= self.C
+                    B ^= C
                 case 5:
-                    outputs.append(combo(self.program[pointer + 1]) % 8)
+                    return combo(operand) % 8, A, B, C, pointer + 2
                 case 6:
-                    self.B = self.A >> combo(self.program[pointer + 1])
+                    B = A >> combo(operand)
                 case 7:
-                    self.C = self.A >> combo(self.program[pointer + 1])
+                    C = A >> combo(operand)
             pointer += 2
-        return outputs
 
-    def part2(self):
-        opt = z3.Optimize()
-        s = z3.BitVec("s", 128)
+    def run_computer(self):
+        pointer = 0
+        outs = []
+        A, B, C = self.A, self.B, self.C
+        while pointer in range(len(self.program)):
+            ret = self.get_next_output(A, B, C, pointer)
+            if ret is None:
+                break
+            out, A, B, C, pointer = ret
+            outs.append(out)
+        return outs
 
-        # TODO: Generalize this
-        A, B, C = s, 0, 0
-        for num in self.program:
-            B = A % 8
-            B = B ^ 3
-            C = A >> B
-            B = B ^ C
-            A = A >> 3
-            B = B ^ 5
-            opt.add(B % 8 == num)
+    def find_A(self, A: int = 0, program_index: int = None):
+        if program_index is None:
+            program_index = len(self.program) - 1
+        elif program_index < 0:
+            return A
 
-        opt.add(A == 0)
-        opt.minimize(A)
-
-        assert opt.check() == z3.sat
-        answer = int(str(opt.model().eval(s)))  # How are we meant to convert to int?
-        self.A = answer
-        assert self.computer() == self.program
-        return answer
+        for tmp_A in range(2**3):
+            new_A = A << 3 | tmp_A
+            res, *_ = self.get_next_output(new_A, 0, 0, 0)
+            if res != self.program[program_index]:
+                continue
+            try:
+                out = self.find_A(new_A, program_index - 1)
+                return out
+            except ValueError as _:
+                continue
+        # Backtrack
+        raise ValueError("This value of A does not work")
 
 
 def main():
@@ -85,13 +92,12 @@ def main():
     test = Solution(test=True)
     test1 = test.part1()
     print(
-        f"(TEST) Part 1: {test1}, \t{'correct :)' if test1 == '4,6,3,5,6,3,5,2,1,0' else 'wrong :('}"
+        f"(TEST) Part 1: {test1}, {'correct :)' if test1 == '5,7,3,0' else 'wrong :('}"
     )
-    # TODO: When having generalized part 2, test it
-    # test2 = test.part2()
-    # print(
-    #     f"(TEST) Part 2: {test2}, \t{'correct :)' if test2 == 117440 else 'wrong :('}"
-    # )
+    test2 = test.part2()
+    print(
+        f"(TEST) Part 2: {test2}, \t{'correct :)' if test2 == 117440 else 'wrong :('}"
+    )
 
     solution = Solution()
     print(f"Part 1: {solution.part1()}")
