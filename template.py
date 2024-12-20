@@ -110,5 +110,23 @@ def manhattan(p1: tuple[int, ...], p2: tuple[int, ...]):
     return sum(abs(a - b) for a, b in zip(p1, p2))
 
 
+def get_close_points(
+    point: tuple[int, int], max_distance: int, include_self: bool = True
+):
+    """
+    Get all points within a certain manhattan distance from a point
+    """
+    x, y = point
+    if include_self:
+        yield x, y
+    for distance in range(max_distance + 1):
+        for offset in range(distance):
+            invOffset = distance - offset
+            yield x + offset, y + invOffset
+            yield x + invOffset, y - offset
+            yield x - offset, y - invOffset
+            yield x - invOffset, y + offset
+
+
 if __name__ == "__main__":
     main()
