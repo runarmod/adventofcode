@@ -192,14 +192,22 @@ def copy_answer(part1: str | int | None, part2: str | int | None):
         pyperclip.copy(copy)
 
 
-def get_data(year: int, day: int):
+def get_data(year: int, day: int, test: bool = False):
     """
     Get the input data for a given year and day.
     Reads the file in the cache, if it exists.
     If neither the file in the repo nor the data is in the cache, it will download the data.
     """
     REPO_PATH = get_repo_path()
-    input_file_path = os.path.join(REPO_PATH, str(year), str(day).zfill(2), "input.txt")
+    day_path = os.path.join(REPO_PATH, str(year), str(day).zfill(2))
+    if test:
+        input_file_path = os.path.join(day_path, "testinput.txt")
+        if not os.path.exists(input_file_path):
+            raise FileNotFoundError(f"Test input file not found: {input_file_path}")
+        with open(input_file_path, "r") as f:
+            return f.read()
+
+    input_file_path = os.path.join(day_path, "input.txt")
     if os.path.exists(input_file_path):
         with open(input_file_path, "r") as f:
             return f.read()
