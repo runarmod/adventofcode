@@ -101,6 +101,8 @@ def submit(year: int, day: int, part: int, answer: int | str):
         or "Congratulations!" in readable_response
     ):
         print(f"{Fore.GREEN}Correct!")
+        if rank := re.search(r"rank (\d+)", readable_response, re.IGNORECASE):
+            print(f"Rank: {Fore.BLUE}{rank.group(1)}")
         if not (day == 25 and part == 1):
             update_stats()
         return SubmissionStatus.CORRECT
