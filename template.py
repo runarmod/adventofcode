@@ -51,15 +51,7 @@ def numsNested(
 class Solution:
     def __init__(self, test=False):
         self.test = test
-        data = (
-            (
-                get_data("CHANGE_YEAR", "CHANGE_DATE")
-                if not self.test
-                else open("testinput.txt").read()
-            )
-            .strip("\n")
-            .split("\n")
-        )
+        data = get_data("CHANGE_YEAR", "CHANGE_DATE", test=test).strip("\n").split("\n")
 
         self.data = numsNested(data)
         # self.data = parseLines(data)
