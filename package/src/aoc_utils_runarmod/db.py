@@ -321,7 +321,7 @@ def save_code_snapshot(year: int, day: int, part: int):
     Will store the currect state of the code in the repository (not db).
     Will store in repo_path/year/day/snapshot-partX-<timestamp>.py
     """
-    repo_path = os.path.join(get_repo_path(), str(year), str(day))
+    repo_path = os.path.join(get_repo_path(), str(year), str(day).zfill(2))
     code_path = os.path.join(repo_path, "main.py")
 
     if not os.path.exists(code_path):
