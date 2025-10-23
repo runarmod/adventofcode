@@ -60,7 +60,7 @@ def request_submit(
             print(f"{Fore.YELLOW}Already guessed.")
             return
         case SubmissionStatus.CORRECT:
-            if part == 1 and day == 25:
+            if part == 1 and (day == 25 or (year >= 2025 and day == 12)):
                 submit(year, day, 2, "0")
             insert_correct_submission(year, day, part, submission)
             save_code_snapshot(year, day, part)
@@ -80,7 +80,7 @@ def submit(year: int, day: int, part: int, answer: int | str):
     URL = f"https://adventofcode.com/{year}/day/{day}/answer"
     COOKIE = get_cookie()
     question = f"Answer for part {part} ({answer}) generated. Send? (y/[n]) "
-    if day != 25 or part == 1:
+    if (year < 2025 and day != 25) or (year >= 2025 and day != 12) or part == 1:
         if input(question).lower() not in ("y", "ye", "yes"):
             print(f"{Fore.YELLOW}Did not submit.")
             return SubmissionStatus.NO_ANSWER
@@ -103,7 +103,9 @@ def submit(year: int, day: int, part: int, answer: int | str):
         print(f"{Fore.GREEN}Correct!")
         if rank := re.search(r"rank (\d+)", readable_response, re.IGNORECASE):
             print(f"Rank: {Fore.BLUE}{rank.group(1)}")
-        if not (day == 25 and part == 1):
+        if not (
+            part == 1 and ((year < 2025 and day == 25) or (year >= 2025 and day == 12))
+        ):
             update_stats()
         return SubmissionStatus.CORRECT
 

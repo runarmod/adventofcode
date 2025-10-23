@@ -90,6 +90,11 @@ def main(args: list[str] = None):
         year=args.y, month=12, day=args.d, hour=0, minute=0, second=0, microsecond=0
     )
 
+    if release.year >= 2025 and release.day > 12:
+        sys.exit(
+            f"{Fore.RED}Advent of Code from 2025 only has puzzles up to day 12. Quiting..."
+        )
+
     if args.wait:
         release = (now + datetime.timedelta(days=1)).replace(
             hour=0, minute=0, second=0, microsecond=0
