@@ -62,10 +62,12 @@ def get_stats_from_HTML(page: requests.Response) -> str:
     for element in childsoup:
         year = element.find("a").text
         stars = " 0*"
-        span = element.find("span")
-        if span is not None:
-            stars = span.text
-        stats += f"{year} {stars}\n"
+        total = "/ 50*" if int(year[1:-1]) < 2025 else "/ 24*"
+        spans = element.find_all("span")
+        if spans:
+            stars = spans[0].text
+            total = spans[1].text
+        stats += f"{year} {stars} {total}\n"
     stats = stats.strip()
 
     total_star_count = soup.find_all("span", {"class": "star-count"})[-1]
@@ -88,6 +90,11 @@ def update_stats() -> None:
         sys.exit(
             f"{Fore.RED}Could not retrieve stats.\nError: {page.status_code}\n{page.content}"
         )
+
+    if "Total stars" not in page.text:
+        print(f"{Fore.RED}Could not find stats in the retrieved page content.")
+        print(f"{Fore.YELLOW}Please check if your session cookie is valid.")
+        return
 
     stats = get_stats_from_HTML(page)
     if update_README(stats):
