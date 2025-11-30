@@ -19,7 +19,7 @@ version = "0.0.1"
 authors = [{ name = "Runar Saur Modahl", email = "runarmod@gmail.com" }]
 description = "A simple package to help with Advent of Code"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
