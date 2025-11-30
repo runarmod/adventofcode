@@ -39,3 +39,6 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/runarmod/adventofcode"
 Issues = "https://github.com/runarmod/adventofcode/issues"
+
+[project.scripts]
+aoc-utils = "aoc_utils_runarmod.__main__:main"
