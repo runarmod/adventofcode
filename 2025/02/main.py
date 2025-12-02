@@ -14,33 +14,24 @@ class Solution:
         self.test = test
         data = get_data(2025, 2, test=test).strip("\n")
 
-        self.data = nums(data)
-        self.data = list(itertools.batched(self.data, 2))
+        self.data = [range(f, t + 1) for f, t in itertools.batched(nums(data), 2)]
 
-    def part1(self):
+    def invalid(self, ID: int, part: int) -> bool:
+        return re.match(r"^(.+)\1+$" if part == 2 else r"^(.+)\1$", str(ID)) is not None
+
+    def solve(self, part: int):
         s = 0
         for r in self.data:
-            for ID in range(r[0], r[1] + 1):
-                id_string = str(ID)
-                if id_string[: len(id_string) // 2] == id_string[len(id_string) // 2 :]:
+            for ID in r:
+                if self.invalid(ID, part):
                     s += ID
         return s
 
-    def part2(self):
-        s = 0
-        for r in self.data:
-            for ID in range(r[0], r[1] + 1):
-                id_string = str(ID)
-                for chunk_length in range(1, len(id_string)):
-                    parts = len(id_string) // chunk_length
-                    if len(id_string) % chunk_length != 0:
-                        continue
+    def part1(self):
+        return self.solve(1)
 
-                    chunk = id_string[:chunk_length]
-                    if chunk * parts == id_string:
-                        s += ID
-                        break
-        return s
+    def part2(self):
+        return self.solve(2)
 
 
 def main():
