@@ -7,38 +7,30 @@ from aoc_utils_runarmod import get_data
 class Solution:
     def __init__(self, test=False):
         self.test = test
-        self.data = list(
-            map(list, get_data(2025, 4, test=test).strip("\n").split("\n"))
+        self.data = set(
+            (x, y)
+            for y, line in enumerate(
+                get_data(2025, 4, test=test).strip("\n").split("\n")
+            )
+            for x, char in enumerate(line)
+            if char == "@"
         )
 
-    def get_removable(self, grid: list[list[str]]) -> list[tuple[int, int]]:
-        removable = []
-        for y in range(len(grid)):
-            for x in range(len(grid[0])):
-                if not grid[y][x] == "@":
-                    continue
-                b = 0
-                for nx, ny in neighbors8((x, y)):
-                    if not (nx in range(len(grid[0])) and ny in range(len(grid))):
-                        continue
-                    if grid[ny][nx] == "@":
-                        b += 1
-                if b < 4:
-                    removable.append((x, y))
-        return removable
+    def get_removable(self, rolls: set[tuple[int, int]]) -> set[tuple[int, int]]:
+        return {
+            pos for pos in rolls if sum(n_pos in rolls for n_pos in neighbors8(pos)) < 4
+        }
 
     def part1(self):
         return len(self.get_removable(self.data))
 
     def part2(self):
         s = 0
-        while True:
+        removable = set()
+        while removable or s == 0:
             removable = self.get_removable(self.data)
-            if not removable:
-                break
             s += len(removable)
-            for x, y in removable:
-                self.data[y][x] = "."
+            self.data -= removable
         return s
 
 
