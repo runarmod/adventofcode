@@ -92,10 +92,24 @@ def neighbors4(point: tuple[int, ...], jump=1):
             yield point[:i] + (point[i] + diff,) + point[i + 1 :]
 
 
+def neighbors4_inside(point: tuple[int, ...], ranges: tuple[range, ...], jump=1):
+    for i in range(len(point)):
+        for diff in (-jump, jump):
+            if point[i] + diff in ranges[i]:
+                yield point[:i] + (point[i] + diff,) + point[i + 1 :]
+
+
 def neighbors8(point: tuple[int, ...], jump=1):
     for diff in itertools.product((-jump, 0, jump), repeat=len(point)):
         if any(diff):
             yield tuple(point[i] + diff[i] for i in range(len(point)))
+
+
+def neighbors8_inside(point: tuple[int, ...], ranges: tuple[range, ...], jump=1):
+    for diff in itertools.product((-jump, 0, jump), repeat=len(point)):
+        new_point = tuple(point[i] + diff[i] for i in range(len(point)))
+        if any(diff) and all(new_point[i] in ranges[i] for i in range(len(point))):
+            yield new_point
 
 
 def manhattan(p1: tuple[int, ...], p2: tuple[int, ...]):
