@@ -7,6 +7,7 @@ import string
 import sys
 import time
 from collections import defaultdict, deque
+from collections.abc import Iterable
 from pprint import pprint
 
 import networkx
@@ -132,6 +133,41 @@ def get_close_points(
             yield x + invOffset, y - offset
             yield x - offset, y - invOffset
             yield x - invOffset, y + offset
+
+
+def networkx_from_grid[T](
+    grid: list[list[T]], passable_chars: set[T]
+) -> networkx.Graph:
+    G = networkx.Graph()
+    w, h = len(grid[0]), len(grid)
+
+    for x, y in itertools.product(range(w), range(h)):
+        if grid[y][x] not in passable_chars:
+            continue
+        for nx, ny in neighbors4_inside((x, y), (range(w), range(h))):
+            if grid[ny][nx] not in passable_chars:
+                continue
+            G.add_edge((x, y), (nx, ny))
+    return G
+
+
+def char_positions[T](grid: list[list[T]]) -> dict[T, set[tuple[int, int]]]:
+    w, h = len(grid[0]), len(grid)
+
+    positions = defaultdict(set)
+    for x, y in itertools.product(range(w), range(h)):
+        positions[grid[y][x]].add((x, y))
+
+    return positions
+
+
+def get_first_position[T](grid: list[list[T]], target: T) -> tuple[int, int] | None:
+    w, h = len(grid[0]), len(grid)
+
+    for x, y in itertools.product(range(w), range(h)):
+        if grid[y][x] == target:
+            return (x, y)
+    return None
 
 
 if __name__ == "__main__":
