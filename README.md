@@ -10,7 +10,7 @@ You have to install the package (`pip install package/`) to be able to use the h
 
 <!-- START STATS -->
 ```py
-[2025] 12* / 24*
+[2025] 14* / 24*
 [2024] 50* / 50*
 [2023] 50* / 50*
 [2022] 50* / 50*
@@ -22,7 +22,7 @@ You have to install the package (`pip install package/`) to be able to use the h
 [2016] 50* / 50*
 [2015] 50* / 50*
 
-Total stars: 512*
+Total stars: 514*
 ```
 <!-- END STATS -->
 
