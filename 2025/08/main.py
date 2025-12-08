@@ -1,4 +1,5 @@
 import functools
+import heapq
 import itertools
 import re
 import time
@@ -21,6 +22,10 @@ def numsNested(
     return tuple(e[0] if len(e) == 1 else e for e in filter(len, map(numsNested, data)))
 
 
+def euclidean(a: tuple[float, ...], b: tuple[float, ...]) -> float:
+    return sum((x - y) ** 2 for x, y in zip(a, b)) ** 0.5
+
+
 class Solution:
     def __init__(self, test=False):
         self.test = test
@@ -35,36 +40,36 @@ class Solution:
             self.G.add_edge(
                 a,
                 b,
-                weight=(
-                    ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2)
-                    ** 0.5
-                ),
+                weight=euclidean(a, b),
             )
 
     def part1(self):
         new_G = networkx.Graph()
-        for edge in sorted(self.G.edges(data=True), key=lambda x: x[2]["weight"])[
-            : (1000 if not self.test else 10)
-        ]:
-            new_G.add_edge(edge[0], edge[1], weight=edge[2]["weight"])
+        q = [(x[2]["weight"], x) for x in self.G.edges(data=True)]
 
-        largest_components = sorted(
-            networkx.connected_components(new_G), key=len, reverse=True
-        )[:3]
-        return functools.reduce(lambda x, y: x * y, map(len, largest_components))
+        for _, edge in heapq.nsmallest(1000 if not self.test else 10, q):
+            new_G.add_edge(edge[0], edge[1])
+
+        largest_components = heapq.nlargest(
+            3, list(map(len, networkx.connected_components(new_G)))
+        )
+        return functools.reduce(lambda x, y: x * y, largest_components)
 
     def part2(self):
         new_G = networkx.Graph()
         new_G.add_nodes_from(self.G.nodes)
 
-        for edge in sorted(self.G.edges(data=True), key=lambda x: x[2]["weight"]):
-            if networkx.has_path(new_G, edge[0], edge[1]):
+        q = [(x[2]["weight"], x) for x in self.G.edges(data=True)]
+        heapq.heapify(q)
+        while q:
+            _, (f, t, _) = heapq.heappop(q)
+            if networkx.has_path(new_G, f, t):
                 # Same component already
                 continue
 
-            new_G.add_edge(edge[0], edge[1], weight=edge[2]["weight"])
+            new_G.add_edge(f, t)
             if networkx.is_connected(new_G):
-                return edge[0][0] * edge[1][0]
+                return f[0] * t[0]
 
 
 def main():
