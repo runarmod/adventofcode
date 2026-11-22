@@ -24,7 +24,7 @@ from .util import get_data
 colorama_init(autoreset=True)
 
 
-def main(args: list[str] = None):
+def main(args: list[str] | None = None):
     now = datetime.datetime.now(tz=pytz.timezone("EST"))
 
     parser = argparse.ArgumentParser(
@@ -108,7 +108,7 @@ def main(args: list[str] = None):
     if now < release and not args.wait:
         sys.exit(
             f"{Fore.RED}The problem doesn't exist yet.\n"
-            + f"Time remaining: {str(release - now)}\n"
+            + f"Time remaining: {release - now!s}\n"
             + "Use wait flag to wait for release."
         )
 
@@ -141,13 +141,12 @@ def main(args: list[str] = None):
         # Create part 1 and 2
         if not os.path.exists(mainPath := os.path.join(path, "main.py")) or args.f:
             template_path = get_template_path()
-            with open(mainPath, "w") as f:
-                with open(template_path, "r") as template:
-                    f.write(
-                        template.read()
-                        .replace('"CHANGE_YEAR"', str(release.year))
-                        .replace('"CHANGE_DATE"', str(release.day))
-                    )
+            with open(template_path) as template, open(mainPath, "w") as f:
+                f.write(
+                    template.read()
+                    .replace('"CHANGE_YEAR"', str(release.year))
+                    .replace('"CHANGE_DATE"', str(release.day))
+                )
 
     URL = f"https://adventofcode.com/{release.year}/day/{release.day}"
 
@@ -158,10 +157,9 @@ def main(args: list[str] = None):
 
     # Make inputfile
     if not os.path.exists(inputPath := os.path.join(path, "input.txt")) or args.f:
-        if args.wait:
+        if args.wait and not countdown(release):
             # Wait for puzzle to be released
-            if not countdown(release):
-                sys.exit(f"{Fore.RED}Countdown failed. Quiting...")
+            sys.exit(f"{Fore.RED}Countdown failed. Quiting...")
 
         get_data(release.year, release.day)
         print(f"{Fore.GREEN}Input downloaded to {inputPath}")

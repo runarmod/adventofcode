@@ -103,11 +103,11 @@ def update_stats() -> None:
         print(f"{Fore.YELLOW}Stats already up to date in README. [No changes made]")
 
 
-def main(args: list[str] = None) -> None:
+def main(args: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
         description="Update stats in the README file",
-        epilog="Example: `python3 -m aoc_utils_runarmod updateStats`",
-        prog="aoc_utils_runarmod updateStats",
+        epilog="Example: `uv run aoc-utils updateStats`",
+        prog="aoc-utils updateStats",
     )
     if args is None:
         args = parser.parse_args()

@@ -35,3 +35,7 @@ extend-exclude = ["201[5-9]", "202[0-4]"]
 [tool.ruff.lint.per-file-ignores]
 # The template's imports are unused on purpose, so they are ready to use
 "template.py" = ["F401"]
+# Caching on Solution methods is fine: each solution is a short-lived script
+"[0-9][0-9][0-9][0-9]/**" = ["B019"]
+# One-liner solutions are a single directly-called lambda on purpose
+"**/oneline.py" = ["PLC3002"]

@@ -1,9 +1,9 @@
 import argparse
 
 from .config import main as config
-from .inputDownloader import main as all_inputs_downloader
+from .input_downloader import main as all_inputs_downloader
 from .start import main as start
-from .updateStats import main as update_stats
+from .update_stats import main as update_stats
 
 
 def main():

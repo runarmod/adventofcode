@@ -22,7 +22,7 @@ import argparse
 import datetime
 import os
 import time
-from typing import Generator
+from collections.abc import Generator
 
 from colorama import Fore
 from colorama import init as colorama_init
@@ -145,11 +145,11 @@ def download_inputs(logger: Logging, sleep_duration: float) -> None:
     logger.summarize()
 
 
-def main(args: list[str] = None) -> None:
+def main(args: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
         description="Download all inputs for all saved days and years.",
-        epilog="Example: `python3 -m aoc_utils_runarmod inputDownloader -v`",
-        prog="aoc_utils_runarmod inputDownloader",
+        epilog="Example: `uv run aoc-utils inputDownloader -v`",
+        prog="aoc-utils inputDownloader",
     )
     parser.add_argument(
         "-v",

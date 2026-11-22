@@ -4,7 +4,7 @@ import time
 from aoc_utils_runarmod import get_data
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def largest_number(numbers, count):
     if count == 0 or not numbers:
         return 0

@@ -16,6 +16,10 @@ CONFIG_PATH = os.path.join(BASE_PATH, "config.json")
 CONFIG_KEYS = ["cookie", "repo_path", "template_path"]
 
 
+class ConfigError(Exception):
+    """A required value is missing from config.json."""
+
+
 def create_config() -> bool:
     if os.path.exists(CONFIG_PATH):
         print(f"{Fore.RED}Config file already exists.")
@@ -42,7 +46,7 @@ def read_config() -> dict:
 def get_cookie() -> str | None:
     config = read_config()
     if "cookie" not in config:
-        raise Exception("cookie not found in config.json")
+        raise ConfigError("cookie not found in config.json")
     return config["cookie"]
 
 
@@ -57,7 +61,7 @@ def set_cookie(cookie: str) -> bool:
 def get_repo_path() -> str:
     config = read_config()
     if "repo_path" not in config:
-        raise Exception("repo_path not found in config.json")
+        raise ConfigError("repo_path not found in config.json")
     return config["repo_path"]
 
 
@@ -72,7 +76,7 @@ def set_repo_path(repo_path: str) -> bool:
 def get_template_path() -> str:
     config = read_config()
     if "template_path" not in config:
-        raise Exception("template_path not found in config.json")
+        raise ConfigError("template_path not found in config.json")
     return config["template_path"]
 
 
@@ -111,7 +115,7 @@ def ensure_db() -> bool:
     return False
 
 
-def main(args: list[str] = None):
+def main(args: list[str] | None = None):
     parser = argparse.ArgumentParser(description="Modify/see config settings")
     parser.add_argument(
         "-m",

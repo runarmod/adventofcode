@@ -19,9 +19,13 @@ from .db import (
     save_code_snapshot,
     validate_submission,
 )
-from .updateStats import update_stats
+from .update_stats import update_stats
 
 colorama_init()
+
+
+class InputDownloadError(Exception):
+    """Downloading a puzzle input from adventofcode.com failed."""
 
 
 def request_submit(
@@ -80,10 +84,11 @@ def submit(year: int, day: int, part: int, answer: int | str):
     URL = f"https://adventofcode.com/{year}/day/{day}/answer"
     COOKIE = get_cookie()
     question = f"Answer for part {part} ({answer}) generated. Send? (y/[n]) "
-    if (year < 2025 and day != 25) or (year >= 2025 and day != 12) or part == 1:
-        if input(question).lower() not in ("y", "ye", "yes"):
-            print(f"{Fore.YELLOW}Did not submit.")
-            return SubmissionStatus.NO_ANSWER
+    if (
+        (year < 2025 and day != 25) or (year >= 2025 and day != 12) or part == 1
+    ) and input(question).lower() not in ("y", "ye", "yes"):
+        print(f"{Fore.YELLOW}Did not submit.")
+        return SubmissionStatus.NO_ANSWER
 
     data = {"level": str(part), "answer": str(answer)}
     response = requests.post(URL, data=data, cookies={"session": COOKIE})
@@ -227,7 +232,7 @@ def get_data(year: int, day: int, test: bool = False):
         }
         page = requests.get(inputURL, cookies=cookies, headers=headers)
         if page.status_code != 200:
-            raise Exception(
+            raise InputDownloadError(
                 f"Input download failed\nError: {page.status_code}\n{page.content}"
             )
         data = page.text

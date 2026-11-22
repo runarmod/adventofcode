@@ -7,14 +7,14 @@ from aoc_utils_runarmod import get_data
 class Solution:
     def __init__(self, test=False):
         self.test = test
-        self.data = set(
+        self.data = {
             (x, y)
             for y, line in enumerate(
                 get_data(2025, 4, test=test).strip("\n").split("\n")
             )
             for x, char in enumerate(line)
             if char == "@"
-        )
+        }
 
     def get_removable(self, rolls: set[tuple[int, int]]) -> set[tuple[int, int]]:
         return {
