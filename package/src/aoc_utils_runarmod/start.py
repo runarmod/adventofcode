@@ -30,8 +30,8 @@ def main(args: list[str] = None):
     parser = argparse.ArgumentParser(
         description="AOC setup and download. If neither day nor year is supplied, "
         + "today's day will be used.",
-        epilog="Example: `python3 -m aoc_utils_runarmod start -d 13 -y 2018 -cb`",
-        prog="aoc_utils_runarmod start",
+        epilog="Example: `uv run aoc-utils start -d 13 -y 2018 -cb`",
+        prog="aoc-utils start",
     )
     parser.add_argument(
         "-d", help="Day", default=now.day, choices=range(1, 25 + 1), type=int

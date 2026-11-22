@@ -4,7 +4,7 @@
 
 This repository contains of all of my code from [advent of code](https://adventofcode.com/).
 
-You have to install the package (`pip install package/`) to be able to use the helper functions. Use the `config` command to set the needed variables (`python3 -m aoc_utils_runarmod config`). There are some utility commands/functions which can be used to download all inputs, update the stars in the README, and sending answers to the aoc website.
+The project uses [uv](https://docs.astral.sh/uv/). Run `uv sync` to install the dependencies and the helper package (a uv workspace member in `package/`). Use the `config` command to set the needed variables (`uv run aoc-utils config`). There are some utility commands/functions which can be used to download all inputs, update the stars in the README, and sending answers to the aoc website.
 
 ## My statistics
 
@@ -28,47 +28,47 @@ Total stars: 524*
 
 ## Installation
 
-Clone the directory, install the package, and set the configuration.
+Clone the directory, install the dependencies, and set the configuration.
 
 ```bash
 git clone https://github.com/runarmod/adventofcode.git
 cd adventofcode
-pip install package/
-python3 -m aoc_utils_runarmod config -c <cookie>
-python3 -m aoc_utils_runarmod config -r <repo>
-python3 -m aoc_utils_runarmod config -t <template>
+uv sync
+uv run aoc-utils config -c <cookie>
+uv run aoc-utils config -r <repo>
+uv run aoc-utils config -t <template>
 ```
 
 ## Usage
 
-Delete directories 2015-2024 if you want to start from scratch.
+Delete all the year directories (2015 and later) if you want to start from scratch.
 
 Create a work-directory for december 1st 2015, download the input file, and open the directory in vs-code.
 
 ```bash
-python3 -m aoc_utils_runarmod start -y 2015 -d 1 -c
+uv run aoc-utils start -y 2015 -d 1 -c
 ```
 
 Create a work-directory for tomorrow, open the directory in vs-code and wait for the release to download the input file and open the problem in the browser.
 
 ```bash
-python3 -m aoc_utils_runarmod start -wcb
+uv run aoc-utils start -wcb
 ```
 
 Force download the input file for today.
 
 ```bash
-python3 -m aoc_utils_runarmod start -if
+uv run aoc-utils start -if
 ```
 
 Force creation of a work-directory for december 24th 2021. This will overwrite any existing directory and files.
 
 ```bash
-python3 -m aoc_utils_runarmod start -f -y 2021 -d 24
+uv run aoc-utils start -f -y 2021 -d 24
 ```
 
 Update the stars in the README.
 
 ```bash
-python3 -m aoc_utils_runarmod updateStats
+uv run aoc-utils updateStats
 ```
