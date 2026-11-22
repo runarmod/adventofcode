@@ -25,7 +25,9 @@ def format_time_until(now: datetime, time: datetime) -> str:
     return f"{hours} hours, {minutes} minutes, {seconds} seconds"
 
 
-def countdown(time: datetime) -> bool:  # ENDS ONE SECOND LATE TO MAKE SURE WEBSITE HAS UPDATED
+def countdown(
+    time: datetime,
+) -> bool:  # ENDS ONE SECOND LATE TO MAKE SURE WEBSITE HAS UPDATED
     """
     Pauses the program until the given time.
     :param time: The time to count down to.

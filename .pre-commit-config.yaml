@@ -9,7 +9,12 @@ repos:
       - id: check-added-large-files
       - id: check-ast
       - id: check-builtin-literals
+      - id: check-case-conflict
+      - id: check-illegal-windows-names
+      - id: check-json
       - id: check-merge-conflict
+      - id: check-toml
+      - id: check-yaml
       - id: end-of-file-fixer
       - id: trailing-whitespace
 
@@ -22,6 +27,9 @@ repos:
     rev: v0.17.6
     hooks:
       - id: ruff-check
-        args: [--fix]
-        exclude: template.py
+        name: lint with ruff
+      - id: ruff
+        name: sort imports with ruff
+        args: [--select, I, --fix]
       - id: ruff-format
+        name: format with ruff
