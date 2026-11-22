@@ -90,11 +90,6 @@ def main(args: list[str] = None):
         year=args.y, month=12, day=args.d, hour=0, minute=0, second=0, microsecond=0
     )
 
-    if release.year >= 2025 and release.day > 12:
-        sys.exit(
-            f"{Fore.RED}Advent of Code from 2025 only has puzzles up to day 12. Quiting..."
-        )
-
     if args.wait:
         release = (now + datetime.timedelta(days=1)).replace(
             hour=0, minute=0, second=0, microsecond=0
@@ -103,6 +98,12 @@ def main(args: list[str] = None):
             sys.exit(
                 f"{Fore.RED}Can't wait for a day that's not in December. Quiting..."
             )
+
+    # Checked after the wait block so it also covers the day `-w` waits for
+    if release.year >= 2025 and release.day > 12:
+        sys.exit(
+            f"{Fore.RED}Advent of Code from 2025 only has puzzles up to day 12. Quiting..."
+        )
 
     if now < release and not args.wait:
         sys.exit(
