@@ -1,3 +1,7 @@
+# Skip years before 2025 entirely, and skip every non-Python file inside year
+# folders (test inputs and solutions, where whitespace may matter).
+exclude: ^(201[5-9]|202[0-4])/|^\d{4}/.*(?<!\.py)$
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
@@ -10,12 +14,12 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.9.13
+    rev: 0.13.9
     hooks:
       - id: uv-lock
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.7
+    rev: v0.17.6
     hooks:
       - id: ruff-check
         args: [--fix]
